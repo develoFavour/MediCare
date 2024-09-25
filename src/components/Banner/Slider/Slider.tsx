@@ -58,7 +58,7 @@ export default function MedicalSlider() {
 	return (
 		<>
 			<div
-				className="relative w-full h-[400px] md:h-[600px] overflow-hidden"
+				className="relative w-full h-[300px] xs:h-[350px] sm:h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden"
 				onMouseEnter={() => setIsPaused(true)}
 				onMouseLeave={() => setIsPaused(false)}
 			>
@@ -95,9 +95,9 @@ export default function MedicalSlider() {
 										}}
 									>
 										<div className="absolute inset-0 bg-opacity-50" />
-										<div className="relative top-40 md:top-32 left-4 md:left-12 inset-0 flex flex-col justify-center px-12 md:px-16 text-[#2c2d3f]">
+										<div className="relative top-1/4 left-8 xs:left-6 sm:left-8 md:left-12 inset-0 flex flex-col justify-center px-4 xs:px-6 sm:px-8 md:px-12 lg:px-16 text-[#2c2d3f]">
 											<motion.h2
-												className="text-2xl md:text-5xl font-bold mb-2 md:mb-4 max-w-2xl"
+												className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-5xl font-bold mb-1 xs:mb-2 sm:mb-3 md:mb-4 max-w-xs xs:max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl"
 												initial={{ opacity: 0, y: 50 }}
 												animate={{ opacity: 1, y: 0 }}
 												transition={{ duration: 0.5, delay: 0.2 }}
@@ -116,7 +116,7 @@ export default function MedicalSlider() {
 													))}
 											</motion.h2>
 											<motion.p
-												className="text-xs md:text-sm max-w-2xl mb-4 md:mb-8"
+												className="text-xs xs:text-sm md:text-base max-w-xs xs:max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl mb-2 xs:mb-3 sm:mb-4 md:mb-6 lg:mb-8"
 												initial={{ opacity: 0, y: 50 }}
 												animate={{ opacity: 1, y: 0 }}
 												transition={{ duration: 0.5, delay: 0.4 }}
@@ -124,15 +124,21 @@ export default function MedicalSlider() {
 												{slides[currentSlide].description}
 											</motion.p>
 											<motion.div
-												className="flex flex-row md:flex-row gap-2 md:gap-4"
+												className="flex flex-row pt-4 xs:flex-row gap-2 xs:gap-3 sm:gap-4"
 												initial={{ opacity: 0, y: -50 }}
 												animate={{ opacity: 1, y: 0 }}
 												transition={{ duration: 0.5, delay: 0.6 }}
 											>
-												<Button size="lg" className="btn slider-btn">
+												<Button
+													size="sm"
+													className="btn slider-btn text-xs xs:text-sm sm:text-base"
+												>
 													Book Appointment
 												</Button>
-												<Button size="lg" className="slider-btn2 btn">
+												<Button
+													size="sm"
+													className="slider-btn2 btn text-xs xs:text-sm sm:text-base"
+												>
 													Learn More
 												</Button>
 											</motion.div>
@@ -146,28 +152,28 @@ export default function MedicalSlider() {
 				<Button
 					variant="ghost"
 					size="icon"
-					className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 text-white bg-[#1a76d1] rounded-full hover:bg-[#2c2d3f] hover:text-white duration-500"
+					className="absolute left-1 xs:left-2 sm:left-3 md:left-4 top-1/2 transform -translate-y-1/2 text-white bg-[#1a76d1] rounded-full hover:bg-[#2c2d3f] hover:text-white duration-500"
 					onClick={() =>
 						goToSlide((currentSlide - 1 + slides.length) % slides.length)
 					}
 				>
-					<ChevronLeft className="h-6 w-6 md:h-8 md:w-8" />
+					<ChevronLeft className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
 					<span className="sr-only">Previous slide</span>
 				</Button>
 				<Button
 					variant="ghost"
 					size="icon"
-					className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 text-white bg-[#1a76d1] rounded-full hover:bg-[#2c2d3f] hover:text-white duration-500"
+					className="absolute right-1 xs:right-2 sm:right-3 md:right-4 top-1/2 transform -translate-y-1/2 text-white bg-[#1a76d1] rounded-full hover:bg-[#2c2d3f] hover:text-white duration-500"
 					onClick={() => goToSlide((currentSlide + 1) % slides.length)}
 				>
-					<ChevronRight className="h-6 w-6 md:h-8 md:w-8" />
+					<ChevronRight className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 lg:h-8 lg:w-8" />
 					<span className="sr-only">Next slide</span>
 				</Button>
-				<div className="absolute bottom-2 md:bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1 md:gap-2">
+				<div className="absolute bottom-1 xs:bottom-2 sm:bottom-3 md:bottom-4 left-1/2 transform -translate-x-1/2 flex gap-1 xs:gap-1.5 sm:gap-2">
 					{slides.map((_, index) => (
 						<button
 							key={index}
-							className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${
+							className={`w-1.5 h-1.5 xs:w-2 xs:h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 rounded-full ${
 								index === currentSlide ? "bg-white" : "bg-white/50"
 							}`}
 							onClick={() => goToSlide(index)}

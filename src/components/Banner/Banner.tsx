@@ -6,8 +6,6 @@ const Banner = () => {
 	const cardDetails = [
 		{
 			title: "Emergency Cases",
-			description:
-				"We provide immediate medical attention and treatment for life-threatening conditions.",
 			contentTitle: "Our emergency services include:",
 			contentList1: "Trauma care",
 			contentList2: "Cardiac emergencies and Accident",
@@ -15,8 +13,6 @@ const Banner = () => {
 		},
 		{
 			title: "Specialized Care Centers",
-			description:
-				"Experience world-class treatment at our state-of-the-art specialized care centers.",
 			contentTitle: "Our centers of excellence feature:",
 			contentList1: "Advanced Cancer Treatment Center",
 			contentList2: "Comprehensive Cardiovascular Institute",
@@ -24,37 +20,34 @@ const Banner = () => {
 		},
 		{
 			title: "Opening Hours",
-			description:
-				"Take control of your health with our tailored preventive care packages.",
 			contentTitle: "Our preventive health services offer:",
 			contentList1: "Comprehensive health screenings",
 			contentList2: "Personalized wellness plans",
 			contentList3: "Lifestyle and nutrition counseling",
 		},
 	];
+
 	return (
-		<div>
+		<div className="relative">
 			<Slider />
-			<div className="flex flex-col lg:flex-row gap-4 px-4 justify-center lg:absolute left-0 right-0 top-[32rem] ">
-				{/* md:flex-row p-4 md:p-8 gap-4 justify-center absolute  md:top-[31rem] sm:top-[34rem] left-0 right-0 */}
-				{cardDetails.map(
-					(
-						{ title, contentTitle, contentList1, contentList2, contentList3 },
-						index
-					) => {
-						return (
-							<div key={index}>
-								<Cards
-									title={title}
-									contentTitle={contentTitle}
-									contentList1={contentList1}
-									contentList2={contentList2}
-									contentList3={contentList3}
-								/>
-							</div>
-						);
-					}
-				)}
+			<div className="container mx-auto px-4 py-8 lg:absolute lg:left-0 lg:right-0 lg:top-[32rem]">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+					{cardDetails.map(
+						(
+							{ title, contentTitle, contentList1, contentList2, contentList3 },
+							index
+						) => (
+							<Cards
+								key={index}
+								title={title}
+								contentTitle={contentTitle}
+								contentList1={contentList1}
+								contentList2={contentList2}
+								contentList3={contentList3}
+							/>
+						)
+					)}
+				</div>
 			</div>
 		</div>
 	);
