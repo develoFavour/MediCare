@@ -3,8 +3,6 @@ import React from "react";
 import Image from "next/image";
 import Slider from "react-slick";
 
-// You'll need to install these packages:
-// npm install react-slick slick-carousel
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -66,8 +64,7 @@ const Sponsors: React.FC = () => {
 									alt={`Sponsor ${id + 1}`}
 									width={140}
 									height={40}
-									objectFit="contain"
-									className=""
+									className="object-contain"
 								/>
 							</div>
 						</div>

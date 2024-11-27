@@ -6,7 +6,7 @@ const Details = () => {
 		{ label: "Hotel Rooms", end: 3469, icon: "icofont-home" },
 		{ label: "Specialist Doctors", end: 557, icon: "icofont-user-alt-3" },
 		{ label: "Happy Patient", end: 4379, icon: "icofont-simple-smile" },
-		// { label: "Friendly Staff", end: 1238, icon: "icofont-doctor-alt" },
+
 		{ label: "High-Quality Staff", end: 8912, icon: "icofont-tick-boxed" },
 	];
 	return (

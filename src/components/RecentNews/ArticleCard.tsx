@@ -18,8 +18,7 @@ const ArticleCard = ({ title, content, image, date }: BlogProps) => {
 						alt={title}
 						width={400}
 						height={300}
-						className="news-head-img"
-						objectFit="cover"
+						className="news-head-img object-cover"
 					/>
 				</div>
 				<div className="news-body news-content">

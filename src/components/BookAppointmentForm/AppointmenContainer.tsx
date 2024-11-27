@@ -13,7 +13,7 @@ const AppointmentContainer = () => {
 						alt="services"
 						height={50}
 						width={50}
-						className="max-w-full h-auto"
+						className="max-w-full h-auto w-auto"
 					/>
 				</div>
 				<p>We Offer amazing Health Care Services You Can Trust</p>

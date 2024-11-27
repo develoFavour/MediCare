@@ -134,7 +134,7 @@ export default function Navigation() {
 											<Link href="/not-found">About Us</Link>
 										</li>
 										<li>
-											<Link href="/not-found">Login/Sign-Up</Link>
+											<Link href="/login">Login/Sign-Up</Link>
 										</li>
 									</ul>
 								</li>

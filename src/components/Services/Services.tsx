@@ -21,8 +21,8 @@ const Services = () => {
 		},
 	];
 	return (
-		<section className="section">
-			<div className="container lg:pt-32">
+		<section className="section lg:mt-[19rem]">
+			<div className="container">
 				<div className="lg:section-title sm:p-6 flex flex-col gap-2 justify-center">
 					<div className="in-head flex flex-col gap-2 lg:flex-col items-center justify-center">
 						<h2 className="text-[22px] text-[#2c2d3f] font-semibold text-center">
@@ -33,7 +33,7 @@ const Services = () => {
 							alt="services"
 							height={50}
 							width={50}
-							className="max-w-full h-auto"
+							className="max-w-full h-auto w-auto"
 						/>
 					</div>
 					<p className="text-center pb-8">

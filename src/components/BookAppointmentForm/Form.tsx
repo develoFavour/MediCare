@@ -28,7 +28,7 @@ const AppointmentForm: React.FC = () => {
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		// Handle form submission logic here
+
 		console.log(formData);
 	};
 
@@ -190,10 +190,11 @@ const AppointmentForm: React.FC = () => {
 									></textarea>
 								</div>
 							</div>
+
 							<div className="mt-6">
 								<button
 									type="submit"
-									className="w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out"
+									className="btn w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white   focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-150 ease-in-out"
 								>
 									Book Appointment
 								</button>

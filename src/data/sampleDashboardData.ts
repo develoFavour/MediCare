@@ -1,0 +1,130 @@
+export const sampleDashboardData = {
+	appointments: [
+		{
+			id: "1",
+			doctor: "Dr. Emily Johnson",
+			specialty: "Cardiologist",
+			date: "2024-05-15",
+			time: "10:00 AM",
+		},
+		{
+			id: "2",
+			doctor: "Dr. Michael Lee",
+			specialty: "Dermatologist",
+			date: "2024-05-20",
+			time: "2:30 PM",
+		},
+		{
+			id: "3",
+			doctor: "Dr. Sarah Parker",
+			specialty: "Neurologist",
+			date: "2024-05-25",
+			time: "11:15 AM",
+		},
+	],
+	reminders: [
+		{
+			id: "1",
+			title: "Take Blood Pressure Medication",
+			description: "Remember to take your daily dose of Lisinopril",
+			completed: true,
+		},
+		{
+			id: "2",
+			title: "Schedule Annual Physical",
+			description: "It's time for your yearly check-up",
+			completed: false,
+		},
+		{
+			id: "3",
+			title: "Refill Prescription",
+			description: "Your cholesterol medication needs to be refilled",
+			completed: false,
+		},
+	],
+	medications: [
+		{
+			id: "1",
+			name: "Lisinopril",
+			dosage: "10mg",
+			frequency: "Once daily",
+			time: "8:00 AM",
+		},
+		{
+			id: "2",
+			name: "Metformin",
+			dosage: "500mg",
+			frequency: "Twice daily",
+			time: "8:00 AM, 8:00 PM",
+		},
+		{
+			id: "3",
+			name: "Atorvastatin",
+			dosage: "20mg",
+			frequency: "Once daily",
+			time: "9:00 PM",
+		},
+	],
+	healthGoals: [
+		{
+			id: "1",
+			title: "Daily Steps",
+			currentValue: 7500,
+			targetValue: 10000,
+			unit: "steps",
+		},
+		{
+			id: "2",
+			title: "Weight Loss",
+			currentValue: 5,
+			targetValue: 10,
+			unit: "lbs",
+		},
+		{
+			id: "3",
+			title: "Sleep Duration",
+			currentValue: 6.5,
+			targetValue: 8,
+			unit: "hours",
+		},
+	],
+	testResults: [
+		{
+			id: "1",
+			testName: "Complete Blood Count",
+			date: "2024-04-10",
+			status: "normal",
+			downloadUrl: "/sample-results/cbc.pdf",
+		},
+		{
+			id: "2",
+			testName: "Lipid Panel",
+			date: "2024-04-15",
+			status: "abnormal",
+			downloadUrl: "/sample-results/lipid.pdf",
+		},
+		{
+			id: "3",
+			testName: "Thyroid Function",
+			date: "2024-04-20",
+			status: "pending",
+			downloadUrl: "/sample-results/thyroid.pdf",
+		},
+	],
+	healthMetrics: {
+		bloodPressure: [
+			{ date: "2024-04-01", value: 130 },
+			{ date: "2024-04-05", value: 142 },
+			{ date: "2024-04-10", value: 128 },
+			{ date: "2024-04-16", value: 135 },
+			{ date: "2024-04-24", value: 120 },
+		],
+		bloodSugar: [
+			{ date: "2024-04-01", value: 102 },
+			{ date: "2024-04-05", value: 98 },
+			{ date: "2024-04-10", value: 105 },
+			{ date: "2024-04-16", value: 110 },
+			{ date: "2024-04-24", value: 95 },
+		],
+	},
+};

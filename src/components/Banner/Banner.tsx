@@ -1,9 +1,19 @@
+"use client";
 import React from "react";
 import Slider from "./Slider/Slider";
 import Cards from "./Card/Card";
+import { motion } from "framer-motion";
 
-const Banner = () => {
-	const cardDetails = [
+interface CardDetail {
+	title: string;
+	contentTitle: string;
+	contentList1: string;
+	contentList2: string;
+	contentList3: string;
+}
+
+const Banner: React.FC = () => {
+	const cardDetails: CardDetail[] = [
 		{
 			title: "Emergency Cases",
 			contentTitle: "Our emergency services include:",
@@ -30,25 +40,32 @@ const Banner = () => {
 	return (
 		<div className="relative">
 			<Slider />
-			<div className="container mx-auto px-4 py-8 lg:absolute lg:left-0 lg:right-0 lg:top-[32rem]">
+
+			<motion.div
+				className="container mx-auto px-4 py-8 lg:absolute lg:top-[35rem] lg:left-0 lg:right-0 lg:bottom-0 lg:transform lg:translate-y-1/2"
+				initial={{ opacity: 0, y: 50 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ duration: 0.5, delay: 0.2 }}
+			>
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					{cardDetails.map(
-						(
-							{ title, contentTitle, contentList1, contentList2, contentList3 },
-							index
-						) => (
+					{cardDetails.map((card, index) => (
+						<motion.div
+							key={index}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
+						>
 							<Cards
-								key={index}
-								title={title}
-								contentTitle={contentTitle}
-								contentList1={contentList1}
-								contentList2={contentList2}
-								contentList3={contentList3}
+								title={card.title}
+								contentTitle={card.contentTitle}
+								contentList1={card.contentList1}
+								contentList2={card.contentList2}
+								contentList3={card.contentList3}
 							/>
-						)
-					)}
+						</motion.div>
+					))}
 				</div>
-			</div>
+			</motion.div>
 		</div>
 	);
 };

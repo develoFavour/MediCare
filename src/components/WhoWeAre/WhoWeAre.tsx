@@ -1,27 +1,37 @@
 "use client";
+
 import Image from "next/image";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
+
+const features = [
+	"24/7 Customer Support",
+	"Patient-Centric Care",
+	"Efficient Care Delivery",
+	"Personalized Care Plans",
+	"High-Quality Medical Services",
+	"Patient Satisfaction Guarantee",
+];
 
 const WhoWeAre = () => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [showModal, setShowModal] = useState(false);
 	const videoRef = useRef<HTMLVideoElement>(null);
 
-	const handlePlayClick = () => {
+	const handlePlayClick = useCallback(() => {
 		setShowModal(true);
 		setIsPlaying(true);
-	};
+	}, []);
 
-	const handleCloseModal = () => {
+	const handleCloseModal = useCallback(() => {
 		setShowModal(false);
 		setIsPlaying(false);
 		if (videoRef.current) {
 			videoRef.current.pause();
 		}
-	};
+	}, []);
 
-	const handleVideoClick = () => {
+	const handleVideoClick = useCallback(() => {
 		if (videoRef.current) {
 			if (videoRef.current.paused) {
 				videoRef.current.play();
@@ -31,7 +41,7 @@ const WhoWeAre = () => {
 				setIsPlaying(false);
 			}
 		}
-	};
+	}, []);
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -45,7 +55,7 @@ const WhoWeAre = () => {
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
 		};
-	}, []);
+	}, [handleCloseModal]);
 
 	return (
 		<section className="section container py-16 px-4 max-w-7xl mx-auto">
@@ -58,7 +68,7 @@ const WhoWeAre = () => {
 					alt="services"
 					height={50}
 					width={50}
-					className="mx-auto mb-4"
+					className="mx-auto mb-4 w-auto h-auto"
 				/>
 				<p className="text-gray-600 max-w-2xl mx-auto px-1">
 					Our Services are Highly Aimed at Providing Different Health Care
@@ -78,14 +88,7 @@ const WhoWeAre = () => {
 						Our Features
 					</h3>
 					<ul className="grid grid-cols-2 gap-2">
-						{[
-							"24/7 Customer Support",
-							"Patient-Centric Care",
-							"Efficient Care Delivery",
-							"Personalized Care Plans",
-							"High-Quality Medical Services",
-							"Patient Satisfaction Guarantee",
-						].map((feature, index) => (
+						{features.map((feature, index) => (
 							<li key={index} className="flex items-center text-gray-600">
 								<div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
 								{feature}
@@ -102,8 +105,9 @@ const WhoWeAre = () => {
 							<Image
 								src="/video-bg.jpg"
 								alt="Video Cover"
+								className="object-cover"
 								layout="fill"
-								objectFit="cover"
+								priority
 							/>
 							<div className="absolute inset-0 bg-black bg-opacity-40"></div>
 							<div className="relative z-10">
@@ -149,7 +153,7 @@ const WhoWeAre = () => {
 											src="/video-bg.jpg"
 											alt="Video Cover"
 											layout="fill"
-											objectFit="cover"
+											objectFit="contain"
 										/>
 										<div className="absolute inset-0 bg-black bg-opacity-40"></div>
 										<div className="relative z-10">
