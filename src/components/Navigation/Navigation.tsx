@@ -12,6 +12,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import TopNav from "./Top-Nav/TopNav";
 import { motion, AnimatePresence } from "framer-motion";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Navigation() {
 	const path = usePathname();
@@ -73,6 +74,62 @@ export default function Navigation() {
 		closed: { opacity: 0, x: -50 },
 		open: { opacity: 1, x: 0 },
 	};
+
+	const MobileNavContent = () => (
+		<motion.div
+			initial="closed"
+			animate="open"
+			exit="closed"
+			variants={menuVariants}
+			className="flex flex-col h-full bg-gradient-to-b from-blue-50 to-white"
+		>
+			<div className="flex justify-between items-center p-4 border-b border-blue-100">
+				<Link href="/">
+					<Image
+						src="/medicare-logo.png"
+						alt="logo"
+						height={40}
+						width={120}
+						className="w-auto"
+					/>
+				</Link>
+			</div>
+			<nav className="flex-grow">
+				<ul className="py-2 px-4">
+					{[
+						{ href: "/", label: "Home" },
+						{ href: "/doctors", label: "Doctors" },
+						{ href: "/services", label: "Services" },
+						{ href: "/pages", label: "Pages" },
+						{ href: "/blogs", label: "Blogs" },
+						{ href: "/contact", label: "Contact Us" },
+					].map((item, index) => (
+						<motion.li key={index} variants={menuItemVariants} className="mb-4">
+							<Link
+								href={item.href}
+								onClick={toggleMobileMenu}
+								className={`block py-3 text-lg font-medium ${
+									path === item.href
+										? "text-blue-600 bg-blue-100 rounded-lg px-4"
+										: "text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg px-4 transition-all duration-300"
+								}`}
+							>
+								{item.label}
+							</Link>
+						</motion.li>
+					))}
+				</ul>
+			</nav>
+			<motion.div variants={menuItemVariants} className="p-4 mt-auto">
+				<button
+					className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+					onClick={toggleMobileMenu}
+				>
+					Schedule Appointment
+				</button>
+			</motion.div>
+		</motion.div>
+	);
 
 	return (
 		<>
@@ -168,75 +225,23 @@ export default function Navigation() {
 							<button className="btn">Schedule Appointments</button>
 						</div>
 						<div className="md:hidden">
-							<button onClick={toggleMobileMenu} className="p-2">
-								{isMobileMenuOpen ? (
-									<RiCloseLine size={24} className="text-blue-500" />
-								) : (
-									<RiMenu3Line size={24} className="text-blue-500" />
-								)}
-							</button>
+							<Sheet>
+								<SheetTrigger asChild>
+									<button className="p-2 text-blue-600 hover:text-blue-800 transition-colors duration-300">
+										<RiMenu3Line size={28} />
+									</button>
+								</SheetTrigger>
+								<SheetContent
+									side="left"
+									className="w-[300px] sm:w-[400px] p-0"
+								>
+									<MobileNavContent />
+								</SheetContent>
+							</Sheet>
 						</div>
 					</nav>
 				</div>
 			</header>
-			<AnimatePresence>
-				{isMobileMenuOpen && (
-					<motion.div
-						initial="closed"
-						animate="open"
-						exit="closed"
-						variants={menuVariants}
-						className="md:hidden fixed top-0 left-0 w-full h-full bg-white z-50 overflow-y-auto"
-					>
-						<div className="flex justify-between items-center p-4 border-b">
-							<Link href="/">
-								<Image
-									src="/medicare-logo.png"
-									alt="logo"
-									height={40}
-									width={120}
-									className="w-auto"
-								/>
-							</Link>
-							<button onClick={toggleMobileMenu} className="p-2">
-								<RiCloseLine size={24} className="text-blue-500" />
-							</button>
-						</div>
-						<ul className="py-2">
-							{[
-								{ href: "/", label: "Home" },
-								{ href: "/doctors", label: "Doctors" },
-								{ href: "/services", label: "Services" },
-								{ href: "/pages", label: "Pages" },
-								{ href: "/blogs", label: "Blogs" },
-								{ href: "/contact", label: "Contact Us" },
-							].map((item, index) => (
-								<motion.li
-									key={index}
-									variants={menuItemVariants}
-									className="border-b"
-								>
-									<Link
-										href={item.href}
-										onClick={toggleMobileMenu}
-										className="block px-4 py-3 text-lg font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-500 transition-colors duration-300"
-									>
-										{item.label}
-									</Link>
-								</motion.li>
-							))}
-							<motion.li variants={menuItemVariants} className="px-4 py-3">
-								<button
-									className="btn w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300"
-									onClick={toggleMobileMenu}
-								>
-									Schedule Appointments
-								</button>
-							</motion.li>
-						</ul>
-					</motion.div>
-				)}
-			</AnimatePresence>
 			{showScrollTop && (
 				<button
 					className="fixed bottom-5 right-5 bg-blue-500 text-white p-3 rounded-full shadow-lg transition-opacity duration-300 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 z-10"
