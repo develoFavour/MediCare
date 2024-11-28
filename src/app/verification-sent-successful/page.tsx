@@ -41,21 +41,9 @@ export default function VerificationSent() {
 					transition={{ delay: 0.6 }}
 					className="text-gray-600 mb-6"
 				>
-					Please check your email to verify your account. The verification link
-					will expire in 1 hour.
+					Please check your mailbox to verify your account. The verification
+					link will expire in 1 hour.
 				</motion.p>
-				{/* <motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.8 }}
-				>
-					<Link
-						href="/login"
-						className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300"
-					>
-						Return to Login
-					</Link>
-				</motion.div> */}
 			</motion.div>
 		</div>
 	);
