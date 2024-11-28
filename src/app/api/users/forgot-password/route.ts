@@ -1,7 +1,7 @@
 import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
 import { NextRequest, NextResponse } from "next/server";
-import { sendPasswordResetEmail } from "@/utils/emailService";
+// import { sendPasswordResetEmail } from "@/utils/emailService";
 import crypto from "crypto";
 
 connect();
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 		user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
 		await user.save();
 
-		await sendPasswordResetEmail(email, resetToken);
+		// await sendPasswordResetEmail(email, resetToken);
 
 		return NextResponse.json({ message: "Password reset email sent" });
 	} catch (error: any) {
