@@ -6,18 +6,19 @@ import {
 	RiArrowDropDownLine,
 	RiArrowUpSLine,
 	RiMenu3Line,
-	RiCloseLine,
+	RiArrowRightSLine,
 } from "react-icons/ri";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import TopNav from "./Top-Nav/TopNav";
 import { motion, AnimatePresence } from "framer-motion";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Navigation() {
 	const path = usePathname();
 	const [isSticky, setIsSticky] = useState(false);
 	const [showScrollTop, setShowScrollTop] = useState(false);
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -31,54 +32,148 @@ export default function Navigation() {
 		};
 
 		window.addEventListener("scroll", handleScroll);
-
-		return () => {
-			window.removeEventListener("scroll", handleScroll);
-		};
+		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
 
 	const scrollToTop = () => {
-		window.scrollTo({
-			top: 0,
-			behavior: "smooth",
-		});
-	};
-
-	const toggleMobileMenu = () => {
-		setIsMobileMenuOpen(!isMobileMenuOpen);
-	};
-
-	const menuVariants = {
-		closed: {
-			opacity: 0,
-			x: "-100%",
-			transition: {
-				duration: 0.5,
-				staggerChildren: 0.1,
-				staggerDirection: -1,
-			},
-		},
-		open: {
-			opacity: 1,
-			x: 0,
-			transition: {
-				duration: 0.5,
-				staggerChildren: 0.1,
-				staggerDirection: 1,
-			},
-		},
+		window.scrollTo({ top: 0, behavior: "smooth" });
 	};
 
 	const menuItemVariants = {
-		closed: { opacity: 0, x: -50 },
+		closed: { opacity: 0, x: -20 },
 		open: { opacity: 1, x: 0 },
 	};
 
+	const dropdownVariants = {
+		closed: { opacity: 0, height: 0 },
+		open: { opacity: 1, height: "auto" },
+	};
+
+	const toggleDropdown = (label: string) => {
+		setOpenDropdown(openDropdown === label ? null : label);
+	};
+
+	const MobileNavContent = () => (
+		<motion.div className="flex flex-col h-full bg-gradient-to-b from-blue-50 to-white">
+			<div className="flex justify-between items-center p-4 border-b border-blue-100">
+				<Link href="/">
+					<Image
+						src="/medicare-logo.png"
+						alt="logo"
+						height={40}
+						width={120}
+						className="w-auto"
+					/>
+				</Link>
+			</div>
+			<nav className="flex-grow">
+				<ul className="py-2 px-4">
+					{[
+						{ href: "/", label: "Home" },
+						{ href: "/doctors", label: "Doctors" },
+						{ href: "/services", label: "Services" },
+						{
+							href: "#",
+							label: "Pages",
+							subpages: [
+								{ href: "/login", label: "Login" },
+								{ href: "/signup", label: "Sign Up" },
+							],
+						},
+						{ href: "/blogs", label: "Blogs" },
+						{ href: "/contact", label: "Contact Us" },
+					].map((item, index) => (
+						<motion.li
+							key={index}
+							variants={menuItemVariants}
+							initial="closed"
+							animate="open"
+							transition={{ delay: index * 0.1 }}
+							className="mb-4"
+						>
+							{item.subpages ? (
+								<div>
+									<button
+										onClick={() => toggleDropdown(item.label)}
+										className={`flex justify-between items-center w-full py-3 text-lg font-medium rounded-lg px-4 transition-all duration-300 ${
+											openDropdown === item.label
+												? "text-blue-600"
+												: "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+										}`}
+									>
+										{item.label}
+										<RiArrowRightSLine
+											className={`transition-transform duration-300 ${
+												openDropdown === item.label ? "rotate-90" : ""
+											}`}
+										/>
+									</button>
+									<AnimatePresence>
+										{openDropdown === item.label && (
+											<motion.ul
+												variants={dropdownVariants}
+												initial="closed"
+												animate="open"
+												exit="closed"
+												className="ml-4 mt-2 space-y-2  px-4"
+											>
+												{item.subpages.map((subpage, subIndex) => (
+													<motion.li
+														key={subIndex}
+														variants={menuItemVariants}
+														className="py-2 border-l-2 border-blue-500 bg-blue-100"
+													>
+														<Link
+															href={subpage.href}
+															className="block text-gray-600 hover:text-blue-600 transition-colors duration-300 pl-2"
+														>
+															{subpage.label}
+														</Link>
+													</motion.li>
+												))}
+											</motion.ul>
+										)}
+									</AnimatePresence>
+								</div>
+							) : (
+								<Link
+									href={item.href}
+									className={`block py-3 text-lg font-medium rounded-lg px-4 transition-all duration-300 ${
+										path === item.href
+											? "text-blue-600 bg-blue-100"
+											: "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+									}`}
+								>
+									{item.label}
+								</Link>
+							)}
+						</motion.li>
+					))}
+				</ul>
+			</nav>
+			<motion.div
+				variants={menuItemVariants}
+				initial="closed"
+				animate="open"
+				transition={{ delay: 0.7 }}
+				className="p-4 mt-auto"
+			>
+				<button className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+					Schedule Appointment
+				</button>
+			</motion.div>
+		</motion.div>
+	);
+
 	return (
 		<>
-			<header>
+			<header className={`relative ${isSticky ? "z-40" : "z-50"}`}>
 				<TopNav />
-				<div className={`header ${isSticky ? "sticky" : ""}`}>
+				<div
+					className={`header ${
+						isSticky ? "fixed top-0 left-0 right-0 bg-white shadow-md" : ""
+					}`}
+				>
 					<nav
 						className={`container container-nav header-inner flex justify-between items-center ${
 							isSticky ? "animate-slideDown" : ""
@@ -168,75 +263,23 @@ export default function Navigation() {
 							<button className="btn">Schedule Appointments</button>
 						</div>
 						<div className="md:hidden">
-							<button onClick={toggleMobileMenu} className="p-2">
-								{isMobileMenuOpen ? (
-									<RiCloseLine size={24} className="text-blue-500" />
-								) : (
-									<RiMenu3Line size={24} className="text-blue-500" />
-								)}
-							</button>
+							<Sheet>
+								<SheetTrigger asChild>
+									<button className="p-2 text-blue-600 hover:text-blue-800 transition-colors duration-300">
+										<RiMenu3Line size={28} />
+									</button>
+								</SheetTrigger>
+								<SheetContent
+									side="left"
+									className="w-[300px] sm:w-[400px] p-0 z-50"
+								>
+									<MobileNavContent />
+								</SheetContent>
+							</Sheet>
 						</div>
 					</nav>
 				</div>
 			</header>
-			<AnimatePresence>
-				{isMobileMenuOpen && (
-					<motion.div
-						initial="closed"
-						animate="open"
-						exit="closed"
-						variants={menuVariants}
-						className="md:hidden fixed top-0 left-0 w-full h-full bg-white z-50 overflow-y-auto"
-					>
-						<div className="flex justify-between items-center p-4 border-b">
-							<Link href="/">
-								<Image
-									src="/medicare-logo.png"
-									alt="logo"
-									height={40}
-									width={120}
-									className="w-auto"
-								/>
-							</Link>
-							<button onClick={toggleMobileMenu} className="p-2">
-								<RiCloseLine size={24} className="text-blue-500" />
-							</button>
-						</div>
-						<ul className="py-2">
-							{[
-								{ href: "/", label: "Home" },
-								{ href: "/doctors", label: "Doctors" },
-								{ href: "/services", label: "Services" },
-								{ href: "/pages", label: "Pages" },
-								{ href: "/blogs", label: "Blogs" },
-								{ href: "/contact", label: "Contact Us" },
-							].map((item, index) => (
-								<motion.li
-									key={index}
-									variants={menuItemVariants}
-									className="border-b"
-								>
-									<Link
-										href={item.href}
-										onClick={toggleMobileMenu}
-										className="block px-4 py-3 text-lg font-medium text-gray-800 hover:bg-blue-50 hover:text-blue-500 transition-colors duration-300"
-									>
-										{item.label}
-									</Link>
-								</motion.li>
-							))}
-							<motion.li variants={menuItemVariants} className="px-4 py-3">
-								<button
-									className="btn w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors duration-300"
-									onClick={toggleMobileMenu}
-								>
-									Schedule Appointments
-								</button>
-							</motion.li>
-						</ul>
-					</motion.div>
-				)}
-			</AnimatePresence>
 			{showScrollTop && (
 				<button
 					className="fixed bottom-5 right-5 bg-blue-500 text-white p-3 rounded-full shadow-lg transition-opacity duration-300 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 z-10"

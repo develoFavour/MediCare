@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, MousePointer2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
 	motion,
@@ -103,24 +103,24 @@ const Slide: React.FC<SlideProps> = ({ slide, isActive }) => {
 				onMouseLeave={handleMouseLeave}
 			>
 				<div
-					className="absolute inset-0 bg-cover bg-center"
+					className="absolute inset-0 bg-cover bg-center bg-no-repeat"
 					style={{
 						backgroundImage: `url(${slide.image})`,
 						filter: "brightness(0.7)",
 					}}
 				/>
 				<div className="absolute inset-0 bg-gradient-to-r from-blue-500/50 to-transparent" />
-				<div className="relative h-full flex flex-col justify-center px-8 md:px-16 text-white z-10">
+				<div className="relative h-full flex flex-col justify-center px-4 sm:px-8 md:px-16 text-white z-10">
 					<motion.div
 						initial={{ opacity: 0, y: 50 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.5, delay: 0.2 }}
-						className="text-6xl mb-4"
+						className="text-4xl sm:text-6xl mb-4"
 					>
 						{slide.icon}
 					</motion.div>
 					<motion.h2
-						className="text-4xl md:text-6xl font-bold mb-4 max-w-2xl"
+						className="text-2xl sm:text-4xl md:text-6xl font-bold mb-4 max-w-2xl"
 						initial={{ opacity: 0, y: 50 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.5, delay: 0.4 }}
@@ -135,7 +135,7 @@ const Slide: React.FC<SlideProps> = ({ slide, isActive }) => {
 						))}
 					</motion.h2>
 					<motion.p
-						className="text-lg md:text-xl max-w-2xl mb-8"
+						className="text-base sm:text-lg md:text-xl max-w-2xl mb-8"
 						initial={{ opacity: 0, y: 50 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.5, delay: 0.6 }}
@@ -143,17 +143,17 @@ const Slide: React.FC<SlideProps> = ({ slide, isActive }) => {
 						{slide.description}
 					</motion.p>
 					<motion.div
-						className="flex gap-4"
+						className="flex flex-col sm:flex-row gap-4"
 						initial={{ opacity: 0, y: 50 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ duration: 0.5, delay: 0.8 }}
 					>
-						<Button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105">
+						<Button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 transform hover:scale-105">
 							Book Appointment
 						</Button>
 						<Button
 							variant="outline"
-							className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:bg-white hover:text-blue-500"
+							className="bg-transparent border-2 border-white text-white px-6 py-3 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:bg-white hover:text-blue-500"
 						>
 							Learn More
 						</Button>
@@ -194,7 +194,7 @@ export default function EnhancedMedicalSlider() {
 
 	return (
 		<div
-			className="relative w-full h-screen overflow-hidden bg-[#2c2d3f]"
+			className="relative w-full h-[calc(100vh-80px)] overflow-hidden bg-[#2c2d3f]"
 			onMouseEnter={() => setIsPaused(true)}
 			onMouseLeave={() => setIsPaused(false)}
 		>
@@ -211,32 +211,34 @@ export default function EnhancedMedicalSlider() {
 				</motion.div>
 			</AnimatePresence>
 
-			<Button
-				variant="ghost"
-				size="icon"
-				className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-blue-500/50 rounded-full hover:bg-blue-600/50 transition-all duration-300"
-				onClick={() =>
-					goToSlide((currentSlide - 1 + slides.length) % slides.length)
-				}
-			>
-				<ChevronLeft className="h-8 w-8" />
-				<span className="sr-only">Previous slide</span>
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-blue-500/50 rounded-full hover:bg-blue-600/50 transition-all duration-300"
-				onClick={() => goToSlide((currentSlide + 1) % slides.length)}
-			>
-				<ChevronRight className="h-8 w-8" />
-				<span className="sr-only">Next slide</span>
-			</Button>
+			<div className="absolute inset-x-0 top-1/2 flex justify-between items-center px-2 sm:px-4 z-20 pointer-events-none">
+				<Button
+					variant="ghost"
+					size="icon"
+					className="pointer-events-auto w-8 h-8 sm:w-10 sm:h-10 text-white bg-blue-500/50 rounded-full hover:bg-blue-600/50 transition-all duration-300"
+					onClick={() =>
+						goToSlide((currentSlide - 1 + slides.length) % slides.length)
+					}
+				>
+					<ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
+					<span className="sr-only">Previous slide</span>
+				</Button>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="pointer-events-auto w-8 h-8 sm:w-10 sm:h-10 text-white bg-blue-500/50 rounded-full hover:bg-blue-600/50 transition-all duration-300"
+					onClick={() => goToSlide((currentSlide + 1) % slides.length)}
+				>
+					<ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
+					<span className="sr-only">Next slide</span>
+				</Button>
+			</div>
 
-			<div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-3">
+			<div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3 z-20">
 				{slides.map((_, index) => (
 					<button
 						key={index}
-						className={`w-3 h-3 rounded-full transition-all duration-300 ${
+						className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
 							index === currentSlide ? "bg-white scale-125" : "bg-white/50"
 						}`}
 						onClick={() => goToSlide(index)}

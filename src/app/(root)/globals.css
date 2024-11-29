@@ -1213,3 +1213,6 @@
 	background-size: cover;
 	background-position: right;
 }
+.mobile-menu-bg-transparent {
+	background-color: transparent !important;
+}
