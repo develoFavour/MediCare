@@ -176,7 +176,7 @@ export default function Navigation() {
 					}`}
 				>
 					<nav
-						className={`container container-nav header-inner flex justify-between items-center ${
+						className={`container container-nav header-inner flex justify-between pb-3 items-center ${
 							isSticky ? "animate-slideDown" : ""
 						}`}
 					>
