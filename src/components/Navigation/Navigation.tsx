@@ -13,7 +13,6 @@ import { useEffect, useState } from "react";
 import TopNav from "./Top-Nav/TopNav";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function Navigation() {
 	const path = usePathname();
@@ -176,7 +175,7 @@ export default function Navigation() {
 					}`}
 				>
 					<nav
-						className={`container container-nav header-inner flex justify-between items-center ${
+						className={`container container-nav header-inner flex justify-between lg:pb-0 sm:pb-3 items-center ${
 							isSticky ? "animate-slideDown" : ""
 						}`}
 					>
@@ -212,7 +211,7 @@ export default function Navigation() {
 										path === "/services" ? "active" : ""
 									} relative mr-[15px]`}
 								>
-									<Link href="/services">Services</Link>
+									<Link href="/our-services">Services</Link>
 								</li>
 								<li
 									className={`${
@@ -227,7 +226,7 @@ export default function Navigation() {
 									</Link>
 									<ul className="dropdown">
 										<li>
-											<Link href="/not-found">About Us</Link>
+											<Link href="/about-us">About Us</Link>
 										</li>
 										<li>
 											<Link href="/login">Login/Sign-Up</Link>
@@ -247,7 +246,7 @@ export default function Navigation() {
 									</Link>
 									<ul className="dropdown">
 										<li>
-											<Link href="/blog/blog-post-1">Blog Post 1</Link>
+											<Link href="/blog">Blog Post 1</Link>
 										</li>
 									</ul>
 								</li>
@@ -256,7 +255,7 @@ export default function Navigation() {
 										path === "/contact" ? "active" : ""
 									} relative mr-[15px]`}
 								>
-									<Link href="/contact">Contact Us</Link>
+									<Link href="/contact-us">Contact Us</Link>
 								</li>
 							</ul>
 						</div>

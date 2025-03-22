@@ -1,25 +1,48 @@
 import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 connect();
 
 export async function POST(req: NextRequest) {
 	try {
-		const { token } = await req.json();
+		const { token, userId } = await req.json();
 
-		if (!token) {
-			console.log("No token provided");
-			return NextResponse.json({ error: "Token is required" }, { status: 400 });
+		console.log("Received verification request:", { token, userId });
+
+		if (!token || !userId) {
+			console.log("Missing token or userId");
+			return NextResponse.json(
+				{ error: "Token and userId are required" },
+				{ status: 400 }
+			);
+		}
+
+		// First check if the user is already verified
+		const alreadyVerifiedUser = await User.findOne({
+			_id: userId,
+			isVerified: true,
+		});
+
+		if (alreadyVerifiedUser) {
+			console.log("User is already verified:", alreadyVerifiedUser.email);
+			return NextResponse.json({
+				message: "Email already verified",
+				success: true,
+				alreadyVerified: true,
+			});
 		}
 
 		const user = await User.findOne({
+			_id: userId,
 			verifyTokenExpiration: { $gt: Date.now() },
 		});
 
 		if (!user) {
-			console.log("No user found with a valid token");
+			console.log(
+				"No user found with the provided userId and valid token expiration"
+			);
 			return NextResponse.json(
 				{ error: "Invalid or expired token" },
 				{ status: 400 }

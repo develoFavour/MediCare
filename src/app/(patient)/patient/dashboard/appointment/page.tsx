@@ -1,74 +1,139 @@
 "use client";
 
 import { useState } from "react";
-import "@/app/(root)/globals.css";
-import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
+import { useUser } from "@/app/context/UserContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle, XCircle } from "lucide-react";
 
 export default function BookAppointmentPage() {
-	const [date, setDate] = useState<Date | undefined>(new Date());
-	const [reason, setReason] = useState("");
+	const [symptoms, setSymptoms] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+	const [showErrorPopup, setShowErrorPopup] = useState(false);
+	const { userData } = useUser();
 
-	const handleBookAppointment = async () => {
-		if (!date || !reason) {
+	const handleSubmitSymptoms = async () => {
+		if (!symptoms) {
 			toast.error(
-				"Please select a date and provide a reason for your appointment."
+				"Please describe your symptoms or reason for the appointment."
 			);
 			return;
 		}
 
-		// Here you would typically make an API call to book the appointment
-		// For now, we'll just simulate a successful booking
-		toast.success(
-			"Appointment request submitted successfully. You will be notified once a doctor is assigned."
-		);
+		if (!userData?._id) {
+			toast.error("User data is not available. Please log in and try again.");
+			return;
+		}
+
+		setIsLoading(true);
+
+		try {
+			const appointmentRequest = {
+				userId: userData._id,
+				symptoms,
+			};
+
+			const response = await fetch("/api/appointment-request", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(appointmentRequest),
+			});
+
+			if (!response.ok) {
+				const errorText = await response.text();
+				throw new Error(
+					`HTTP error! status: ${response.status}, body: ${errorText}`
+				);
+			}
+
+			const data = await response.json();
+
+			setShowSuccessPopup(true);
+			setTimeout(() => setShowSuccessPopup(false), 3000);
+			setSymptoms("");
+		} catch (error) {
+			setShowErrorPopup(true);
+			setTimeout(() => setShowErrorPopup(false), 3000);
+			console.error(
+				"An error occurred while submitting your appointment request:",
+				error
+			);
+			toast.error(
+				`Error: ${error instanceof Error ? error.message : String(error)}`
+			);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	return (
-		<div className="p-6 bg-white rounded-lg shadow">
-			<h1 className="text-2xl font-bold mb-6 text-[#116aef]">
-				Book an Appointment
+		<div className="p-6 bg-white h-full rounded-lg shadow-lg mx-auto">
+			<h1 className="text-3xl font-bold mb-8 text-[#116aef]">
+				Request an Appointment
 			</h1>
-			<div className="grid gap-6 md:grid-cols-2">
+			<div className="space-y-6">
 				<div>
-					<h2 className="text-lg font-semibold mb-2">Select a Date</h2>
-					<Calendar
-						mode="single"
-						selected={date}
-						onSelect={setDate}
-						className="rounded-md border"
+					<label
+						htmlFor="symptoms"
+						className="block text-lg font-medium text-gray-700 mb-2"
+					>
+						Describe Your Symptoms
+					</label>
+					<Textarea
+						id="symptoms"
+						value={symptoms}
+						onChange={(e) => setSymptoms(e.target.value)}
+						placeholder="Please describe your symptoms or reason for the appointment in detail. This will help us assign the most appropriate doctor for your needs."
+						className="w-full min-h-[200px]"
 					/>
 				</div>
-				<div>
-					<h2 className="text-lg font-semibold mb-2">Appointment Details</h2>
-					<div className="space-y-4">
-						<div>
-							<label
-								htmlFor="reason"
-								className="block text-sm font-medium text-gray-700 mb-1"
-							>
-								Reason for Appointment
-							</label>
-							<Textarea
-								id="reason"
-								value={reason}
-								onChange={(e) => setReason(e.target.value)}
-								placeholder="Please describe your symptoms or reason for the appointment"
-								className="w-full"
-							/>
-						</div>
-						<Button
-							onClick={handleBookAppointment}
-							className="w-full bg-[#116aef] hover:bg-[#0f5ed8]"
-						>
-							Request Appointment
-						</Button>
-					</div>
-				</div>
+				<Button
+					onClick={handleSubmitSymptoms}
+					className="w-full bg-[#116aef] hover:bg-[#0f5ed8] text-white font-semibold py-3 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+					disabled={isLoading}
+				>
+					{isLoading ? "Submitting..." : "Submit Appointment Request"}
+				</Button>
 			</div>
+			<Toaster
+				position="top-right"
+				toastOptions={{
+					duration: 3000,
+					style: {
+						background: "#333",
+						color: "#fff",
+					},
+				}}
+			/>
+			<AnimatePresence>
+				{showSuccessPopup && (
+					<motion.div
+						initial={{ opacity: 0, y: -50 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -50 }}
+						className="fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg flex items-center"
+					>
+						<CheckCircle className="mr-2" />
+						Appointment request submitted successfully!
+					</motion.div>
+				)}
+				{showErrorPopup && (
+					<motion.div
+						initial={{ opacity: 0, y: -50 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: -50 }}
+						className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg flex items-center"
+					>
+						<XCircle className="mr-2" />
+						An error occurred. Please try again.
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }

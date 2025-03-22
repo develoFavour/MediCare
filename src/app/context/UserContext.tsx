@@ -1,28 +1,35 @@
 "use client";
 
-import React, {
+import type React from "react";
+import {
 	createContext,
 	useState,
 	useEffect,
 	useContext,
-	ReactNode,
+	type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
 import { fetchUserData } from "@/lib/getUserDetails";
 
 interface UserData {
+	_id: string;
 	fullName: string;
 	email: string;
 	role: "admin" | "doctor" | "patient";
 	gender: string;
-	age: Number;
+	age: number;
 	bloodType: string;
+	profileImage?: string;
+	isApproved?: boolean;
+	assignedDoctor?: any;
 }
 
 interface UserContextType {
 	userData: UserData | null;
 	isLoading: boolean;
 	error: string | null;
+	updateUserData: (newData: UserData) => void;
+	refreshUserData: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -37,14 +44,29 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 	const [error, setError] = useState<string | null>(null);
 	const router = useRouter();
 
-	useEffect(() => {
-		const loadUserData = async () => {
-			try {
-				const data = await fetchUserData();
-				setUserData(data.data);
+	const loadUserData = async () => {
+		try {
+			setIsLoading(true);
+			const data = await fetchUserData();
+			setUserData(data.data);
+			return data.data;
+		} catch (err: any) {
+			console.error("Error loading user data:", err);
+			setError(err.message || "Failed to load user data");
+			return null;
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-				if (data.data) {
-					switch (data.data.role) {
+	useEffect(() => {
+		const initializeUser = async () => {
+			const user = await loadUserData();
+
+			if (user) {
+				// Only redirect on initial load, not on refreshes
+				if (window.location.pathname === "/") {
+					switch (user.role) {
 						case "admin":
 							router.push("/admin/dashboard");
 							break;
@@ -58,21 +80,26 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 							router.push("/login");
 					}
 				}
-			} catch (err: any) {
-				console.error("Error loading user data:", err);
-				setError(err.message || "Failed to load user data");
-			} finally {
-				setIsLoading(false);
 			}
 		};
 
-		loadUserData();
+		initializeUser();
 	}, [router]);
+
+	const updateUserData = (newData: UserData) => {
+		setUserData(newData);
+	};
+
+	const refreshUserData = async () => {
+		await loadUserData();
+	};
 
 	const value: UserContextType = {
 		userData,
 		isLoading,
 		error,
+		updateUserData,
+		refreshUserData,
 	};
 
 	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
@@ -83,7 +110,15 @@ export const useUser = (): UserContextType => {
 	if (typeof window !== "undefined" && context === undefined) {
 		throw new Error("useUser must be used within a UserProvider");
 	}
-	return context || { userData: null, isLoading: true, error: null };
+	return (
+		context || {
+			userData: null,
+			isLoading: true,
+			error: null,
+			updateUserData: () => {},
+			refreshUserData: async () => {},
+		}
+	);
 };
 
 export default UserContext;

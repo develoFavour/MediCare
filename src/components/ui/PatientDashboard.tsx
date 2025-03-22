@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { clientNavItems as navItems } from "@/app/constants";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,21 +27,55 @@ const PatientDashboardSideNav: React.FC<PatientDashboardSideNavProps> = ({
 	open,
 	setOpen,
 }) => {
-	const { userData } = useUser();
+	const { userData, refreshUserData } = useUser();
+	const [profileImageKey, setProfileImageKey] = useState(Date.now());
+
+	useEffect(() => {
+		// Force refresh the profile image when userData changes
+		if (userData?.profileImage) {
+			setProfileImageKey(Date.now());
+		}
+	}, [userData?.profileImage]);
+
+	console.log("Patient User Data", userData);
+
 	const pathname = usePathname();
+
+	const getUserInitials = () => {
+		if (!userData?.fullName) return "";
+		const names = userData.fullName.split(" ");
+		if (names.length >= 2) {
+			return `${names[0][0]}${names[1][0]}`.toUpperCase();
+		}
+		return userData.fullName.substring(0, 2).toUpperCase();
+	};
 
 	const sidebarContent = (
 		<div className="flex flex-col h-full">
 			<div className="space-y-4 flex-1">
 				<div className="px-3 py-2 border-b border-b-[#f1f1f1]">
 					<div className="flex items-center gap-2 mb-4">
-						<Image
-							src="/img/avatar.jpg"
-							height={64}
-							width={64}
-							alt="user-avatar"
-							className="h-16 w-16 rounded-full object-cover img-shadow"
-						/>
+						{userData?.profileImage ? (
+							<div className="relative h-16 w-16 rounded-full overflow-hidden img-shadow">
+								<Image
+									key={profileImageKey}
+									src={userData.profileImage || "/placeholder.svg"}
+									alt="user-avatar"
+									width={64}
+									height={64}
+									className="object-cover h-full w-full"
+									onError={() => {
+										console.error("Failed to load profile image");
+										// If image fails to load, force a refresh of user data
+										refreshUserData();
+									}}
+								/>
+							</div>
+						) : (
+							<div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold text-xl img-shadow">
+								{getUserInitials()}
+							</div>
+						)}
 						<div>
 							<p className="font-semibold text-lg text-gray-800">
 								{userData?.fullName}

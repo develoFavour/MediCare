@@ -6,9 +6,18 @@ interface BlogProps {
 	content: string;
 	image: string;
 	date: string;
+	category: string;
+	index: number;
 }
 
-const ArticleCard = ({ title, content, image, date }: BlogProps) => {
+const ArticleCard = ({
+	title,
+	content,
+	image,
+	date,
+	category,
+	index,
+}: BlogProps) => {
 	return (
 		<div className="single-news">
 			<div className="">

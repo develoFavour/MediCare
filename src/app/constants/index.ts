@@ -15,19 +15,10 @@ import {
 	ClipboardList,
 	DoorOpen,
 	Stethoscope,
+	SettingsIcon,
 } from "lucide-react";
 export const clientNavItems = [
 	{ href: "/patient/dashboard", icon: HomeIcon, label: "Home" },
-	{
-		href: "/patient/dashboard/messages",
-		icon: MessageCircleIcon,
-		label: "Messages",
-	},
-	{
-		href: "/patient/dashboard/medical-record",
-		icon: FileTextIcon,
-		label: "Medical Records",
-	},
 	{
 		href: "/patient/dashboard/appointment",
 		icon: SquarePlus,
@@ -52,6 +43,11 @@ export const clientNavItems = [
 		href: "/patient/dashboard/calendar",
 		icon: CalendarIcon,
 		label: "Patient's Calendar",
+	},
+	{
+		href: "/patient/dashboard/settings",
+		icon: SettingsIcon,
+		label: "Settings",
 	},
 ];
 export const adminNavItems = [

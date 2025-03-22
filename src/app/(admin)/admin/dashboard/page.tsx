@@ -27,6 +27,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import DashboardHeader from "@/components/AdminDashboardHeader";
+import AvailableDoctors from "@/components/AvailableDoctors";
+import UpcomingAppointments from "@/components/UpComingAppointments";
+import Footer from "@/components/Footer";
+import LoadingState from "@/components/LoadingState";
 
 function AdminDashboard() {
 	const { userData, isLoading } = useUser();
@@ -40,7 +44,7 @@ function AdminDashboard() {
 	}, [userData, isLoading, router]);
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <LoadingState />;
 	}
 
 	if (!userData || userData.role !== "admin") {
@@ -64,46 +68,20 @@ function AdminDashboard() {
 		}
 	};
 
-	const checkTimeOfTheDay = () => {
-		const currentTime = new Date().getHours();
-		if (currentTime >= 6 && currentTime < 12) {
-			return `Good Morning!`;
-		} else if (currentTime >= 12 && currentTime < 18) {
-			return `Good Afternoon!`;
-		} else {
-			return `Good Evening!`;
-		}
-	};
-
-	const scheduleForToday = [
-		{ time: "09:00 AM", task: "Morning Rounds", department: "General" },
-		{ time: "10:30 AM", task: "Staff Meeting", department: "Administration" },
-		{ time: "01:00 PM", task: "Budget Review", department: "Finance" },
-		{
-			time: "03:00 PM",
-			task: "Patient Complaints Review",
-			department: "Patient Relations",
-		},
-		{
-			time: "04:30 PM",
-			task: "Department Heads Meeting",
-			department: "All Departments",
-		},
-	];
-
-	const adminRoles = [
-		"Hospital Operations Oversight",
-		"Financial Management",
-		"Staff Coordination",
-		"Quality Assurance",
-		"Regulatory Compliance",
-		"Strategic Planning",
-		"Community Relations",
-	];
-
 	return (
 		<div className="container mx-auto p-6">
 			<DashboardHeader userName={userData.fullName} />
+			<AvailableDoctors />
+			<div className="flex-grow container mx-auto px-4 py-4 bg-[#F8FAFC] mt-8">
+				<UpcomingAppointments />
+			</div>
+			<div className="flex justify-end text-[#1565C0]">
+				<Button onClick={handleLogout}>
+					<LogOut size={24} className="mr-2" />
+					Logout
+				</Button>
+			</div>
+			<Footer />
 		</div>
 	);
 }

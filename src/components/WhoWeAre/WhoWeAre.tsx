@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { X } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { X, Play, CheckCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 const features = [
 	"24/7 Customer Support",
@@ -58,116 +59,154 @@ const WhoWeAre = () => {
 	}, [handleCloseModal]);
 
 	return (
-		<section className="section container py-16 px-4 max-w-7xl mx-auto">
-			<div className="text-center mb-12">
-				<h2 className="text-2xl lg:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-					We Offer Different Services To Improve Your Health
-				</h2>
-				<Image
-					src="/section-img.png"
-					alt="services"
-					height={50}
-					width={50}
-					className="mx-auto mb-4 w-auto h-auto"
-				/>
-				<p className="text-gray-600 max-w-2xl mx-auto px-1">
-					Our Services are Highly Aimed at Providing Different Health Care
-					Services To Provide Our Client With The Best Health Care Services.
-				</p>
-			</div>
-			<div className="flex flex-col md:flex-row gap-8">
-				<div className="md:w-1/2 px-4">
-					<h3 className="text-2xl font-bold text-gray-800 mb-4">Who We Are</h3>
-					<p className="text-gray-600 mb-6 ">
-						We envision a world where healthcare is accessible, efficient, and
-						patient-centered. By leveraging cutting-edge technology, we aim to
-						bridge the gap between patients and providers, ensuring that quality
-						care is just a click away.
-					</p>
-					<h3 className="text-2xl font-bold text-gray-800 mb-4">
-						Our Features
-					</h3>
-					<ul className="grid grid-cols-2 gap-2">
-						{features.map((feature, index) => (
-							<li key={index} className="flex items-center text-gray-600">
-								<div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-								{feature}
-							</li>
-						))}
-					</ul>
-				</div>
-				<div className="md:w-1/2 px-4">
-					<div className="relative pt-[56.25%] rounded-lg overflow-hidden">
-						<div
-							className="absolute top-0 left-0 w-full h-full flex items-center justify-center cursor-pointer video-image"
-							onClick={handlePlayClick}
-						>
-							<Image
-								src="/video-bg.jpg"
-								alt="Video Cover"
-								className="object-cover"
-								layout="fill"
-								priority
-							/>
-							<div className="absolute inset-0 bg-black bg-opacity-40"></div>
-							<div className="relative z-10">
-								<div className="promo-video">
-									<div className="waves-block">
-										<div className="waves wave-1"></div>
-										<div className="waves wave-2"></div>
-										<div className="waves wave-3"></div>
-									</div>
-								</div>
-								<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[70px] h-[70px] bg-[#1a76d1] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
-									<i className="icofont-ui-play text-white text-2xl"></i>
-								</div>
-							</div>
-						</div>
+		<section className="py-20 px-4 bg-white">
+			<div className="container mx-auto max-w-7xl">
+				<motion.div
+					className="text-center mb-16"
+					initial={{ opacity: 0, y: 20 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true }}
+					transition={{ duration: 0.6 }}
+				>
+					<h2 className="text-3xl md:text-4xl font-bold text-[#032b53] mb-4">
+						We Offer Different Services To Improve Your Health
+					</h2>
+					<div className="flex justify-center mb-4">
+						<Image
+							src="/section-img.png"
+							alt="services"
+							height={50}
+							width={50}
+							className="mx-auto"
+						/>
 					</div>
-				</div>
-			</div>
+					<p className="text-gray-600 max-w-2xl mx-auto">
+						Our Services are Highly Aimed at Providing Different Health Care
+						Services To Provide Our Client With The Best Health Care Services.
+					</p>
+				</motion.div>
 
-			{showModal && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-					<div className="relative w-full max-w-4xl">
-						<button
-							onClick={handleCloseModal}
-							className="absolute -top-10 right-0 text-white hover:text-gray-300"
-						>
-							<X size={24} />
-						</button>
-						<div className="relative pt-[56.25%]">
+				<div className="flex flex-col md:flex-row gap-12 items-center">
+					<motion.div
+						className="md:w-1/2"
+						initial={{ opacity: 0, x: -30 }}
+						whileInView={{ opacity: 1, x: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+					>
+						<h3 className="text-2xl font-bold text-[#032b53] mb-6">
+							Who We Are
+						</h3>
+						<p className="text-gray-600 mb-8 leading-relaxed">
+							We envision a world where healthcare is accessible, efficient, and
+							patient-centered. By leveraging cutting-edge technology, we aim to
+							bridge the gap between patients and providers, ensuring that
+							quality care is just a click away.
+						</p>
+						<h3 className="text-2xl font-bold text-[#032b53] mb-6">
+							Our Features
+						</h3>
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							{features.map((feature, index) => (
+								<motion.div
+									key={index}
+									className="flex items-center"
+									initial={{ opacity: 0, y: 10 }}
+									whileInView={{ opacity: 1, y: 0 }}
+									viewport={{ once: true }}
+									transition={{ duration: 0.3, delay: index * 0.1 }}
+								>
+									<CheckCircle className="h-5 w-5 text-[#116aef] mr-3 flex-shrink-0" />
+									<span className="text-gray-700">{feature}</span>
+								</motion.div>
+							))}
+						</div>
+					</motion.div>
+
+					<motion.div
+						className="md:w-1/2"
+						initial={{ opacity: 0, x: 30 }}
+						whileInView={{ opacity: 1, x: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+					>
+						<div className="relative rounded-xl overflow-hidden shadow-xl">
 							<div
-								className="absolute inset-0 flex items-center justify-center cursor-pointer"
-								onClick={handleVideoClick}
+								className="relative pt-[56.25%] cursor-pointer group"
+								onClick={handlePlayClick}
 							>
-								<video
-									ref={videoRef}
-									className="w-full h-full"
-									src="/Medi-Care.mp4"
-									autoPlay
-								></video>
-								{!isPlaying && (
-									<div className="absolute inset-0 flex items-center justify-center">
-										<Image
-											src="/video-bg.jpg"
-											alt="Video Cover"
-											layout="fill"
-											objectFit="contain"
-										/>
-										<div className="absolute inset-0 bg-black bg-opacity-40"></div>
-										<div className="relative z-10">
-											<div className="w-[70px] h-[70px] bg-[#1a76d1] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
-												<i className="icofont-ui-play text-white text-2xl"></i>
-											</div>
+								<Image
+									src="/video-bg.jpg"
+									alt="Video Cover"
+									className="object-cover transition-transform duration-700 group-hover:scale-105"
+									layout="fill"
+									priority
+								/>
+								<div className="absolute inset-0 bg-gradient-to-t from-[#032b53]/60 to-transparent"></div>
+
+								<div className="absolute inset-0 flex items-center justify-center">
+									<div className="relative">
+										{/* Animated waves */}
+										<div className="absolute -inset-4 flex items-center justify-center">
+											<div className="absolute w-16 h-16 rounded-full border-2 border-white opacity-70 animate-ping"></div>
+											<div className="absolute w-20 h-20 rounded-full border-2 border-white opacity-50 animate-pulse"></div>
+											<div className="absolute w-24 h-24 rounded-full border-2 border-white opacity-30"></div>
+										</div>
+
+										{/* Play button */}
+										<div className="relative z-10 w-16 h-16 bg-[#116aef] rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-300 group-hover:scale-110">
+											<Play className="h-6 w-6 text-white ml-1" />
 										</div>
 									</div>
-								)}
+								</div>
+							</div>
+						</div>
+					</motion.div>
+				</div>
+
+				{showModal && (
+					<div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm">
+						<div className="relative w-full max-w-4xl">
+							<button
+								onClick={handleCloseModal}
+								className="absolute -top-12 right-0 text-white hover:text-gray-300 p-2 rounded-full bg-[#116aef]/20 hover:bg-[#116aef]/40 transition-colors"
+							>
+								<X size={24} />
+							</button>
+							<div className="relative pt-[56.25%] rounded-xl overflow-hidden shadow-2xl">
+								<div
+									className="absolute inset-0 flex items-center justify-center cursor-pointer"
+									onClick={handleVideoClick}
+								>
+									<video
+										ref={videoRef}
+										className="w-full h-full"
+										src="/Medi-Care.mp4"
+										autoPlay
+										controls={isPlaying}
+									></video>
+									{!isPlaying && (
+										<div className="absolute inset-0 flex items-center justify-center">
+											<Image
+												src="/video-bg.jpg"
+												alt="Video Cover"
+												layout="fill"
+												objectFit="contain"
+											/>
+											<div className="absolute inset-0 bg-black bg-opacity-40"></div>
+											<div className="relative z-10">
+												<div className="w-16 h-16 bg-[#116aef] rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-300">
+													<Play className="h-6 w-6 text-white ml-1" />
+												</div>
+											</div>
+										</div>
+									)}
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</section>
 	);
 };

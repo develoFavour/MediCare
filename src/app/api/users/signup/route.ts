@@ -1,39 +1,22 @@
 import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
 import bcrypt from "bcryptjs";
-import { NextRequest, NextResponse } from "next/server";
-import { sendEmail } from "@/utils/emailService";
+import { type NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { sendEmail } from "@/utils/emailService";
 
 connect();
 
 // Password validation function
 const isPasswordValid = (password: string) => {
-	const minLength = 8;
-	const hasUpperCase = /[A-Z]/.test(password);
-	const hasLowerCase = /[a-z]/.test(password);
-	const hasNumbers = /\d/.test(password);
-	const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
+	const passwordRegex =
+		/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()])(?=.{8,})/;
+	const isValid = passwordRegex.test(password);
 	return {
-		isValid:
-			password.length >= minLength &&
-			hasUpperCase &&
-			hasLowerCase &&
-			hasNumbers &&
-			hasSpecialChar,
-		message:
-			password.length < minLength
-				? "Password must be at least 8 characters long"
-				: !hasUpperCase
-				? "Password must contain at least one uppercase letter"
-				: !hasLowerCase
-				? "Password must contain at least one lowercase letter"
-				: !hasNumbers
-				? "Password must contain at least one number"
-				: !hasSpecialChar
-				? "Password must contain at least one special character"
-				: "",
+		isValid,
+		message: !isValid
+			? "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*())."
+			: "",
 	};
 };
 
@@ -42,6 +25,23 @@ export async function POST(req: NextRequest) {
 		const reqBody = await req.json();
 		const { fullName, email, password, phoneNumber, age, gender } = reqBody;
 		console.log(reqBody);
+
+		// Validate required fields
+		if (!fullName || !email || !password || !age || !gender) {
+			return NextResponse.json(
+				{ error: "All fields are required" },
+				{ status: 400 }
+			);
+		}
+
+		// Validate email format
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			return NextResponse.json(
+				{ error: "Please enter a valid email address" },
+				{ status: 400 }
+			);
+		}
 
 		// Validate password
 		const passwordCheck = isPasswordValid(password);
@@ -75,21 +75,19 @@ export async function POST(req: NextRequest) {
 			email,
 			password: hashedPassword,
 			phoneNumber,
-			age: Number(age), // Explicitly convert to Number
+			age: Number(age),
 			gender,
 			verifyToken: hashedToken,
 			verifyTokenExpiration: Date.now() + 3600000,
 		});
-		console.log("User created", newUser.toObject()); // Use toObject() for logging
 
 		let savedUser;
 		try {
 			savedUser = await newUser.save();
-			console.log("Saved user:", savedUser.toObject()); // Log the saved user
+			console.log("User saved successfully:", savedUser._id);
 		} catch (saveError: any) {
-			console.error("Error saving user:", saveError);
 			if (saveError.name === "ValidationError") {
-				for (let field in saveError.errors) {
+				for (const field in saveError.errors) {
 					console.log(`${field}: ${saveError.errors[field].message}`);
 				}
 			}
@@ -97,12 +95,53 @@ export async function POST(req: NextRequest) {
 		}
 
 		// Send verification email
-		await sendEmail({
-			email: savedUser.email,
-			emailType: "VERIFY",
-			userId: savedUser._id.toString(),
-			token: verificationToken,
-		});
+		try {
+			console.log("Sending verification email to:", email);
+
+			// Validate email parameters before sending
+			if (!email || !savedUser._id || !verificationToken) {
+				console.error("Missing required parameters for verification email:", {
+					email: !!email,
+					userId: !!savedUser._id,
+					token: !!verificationToken,
+				});
+				throw new Error("Missing required parameters for verification email");
+			}
+
+			const emailResult = await sendEmail({
+				email: savedUser.email,
+				emailType: "VERIFY",
+				userId: savedUser._id.toString(),
+				token: verificationToken,
+			});
+
+			if (emailResult.success) {
+				console.log(
+					"Verification email sent successfully:",
+					emailResult.messageId
+				);
+			} else {
+				console.error("Failed to send verification email:");
+				// Delete the user if email sending fails
+				await User.findByIdAndDelete(savedUser._id);
+				return NextResponse.json(
+					{
+						error: "An Error Occurred. Please try creating an account again.",
+					},
+					{ status: 500 }
+				);
+			}
+		} catch (emailError: any) {
+			console.error("Failed to send verification email:", emailError);
+			// Delete the user if email sending fails
+			await User.findByIdAndDelete(savedUser._id);
+			return NextResponse.json(
+				{
+					error: "An Error Occurred. Please try creating an account again.",
+				},
+				{ status: 500 }
+			);
+		}
 
 		return NextResponse.json({
 			message:

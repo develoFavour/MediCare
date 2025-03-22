@@ -4,9 +4,10 @@ interface Props {
 	ico: string;
 	title: string;
 	desc: string;
+	index: number;
 }
 
-const ImprovedServices = ({ ico, title, desc }: Props) => {
+const ImprovedServices = ({ ico, title, desc, index }: Props) => {
 	return (
 		<div className="flex improved single-service">
 			<div>

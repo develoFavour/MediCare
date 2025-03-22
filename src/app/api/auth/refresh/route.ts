@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
 		) as jwt.JwtPayload;
 
 		const newToken = jwt.sign(
-			{ id: decoded.id, email: decoded.email },
+			{ id: decoded.id, email: decoded.email, role: decoded.role },
 			process.env.TOKEN_SECRET!,
-			{ expiresIn: "15m" }
+			{ expiresIn: "1h" }
 		);
 
 		const response = NextResponse.json({ token: newToken, success: true });
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === "production",
 			sameSite: "strict",
-			maxAge: 60 * 60,
+			maxAge: 60 * 60, // 1 hour in seconds
 		});
 
 		return response;

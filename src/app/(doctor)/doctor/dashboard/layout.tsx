@@ -1,5 +1,6 @@
 import { UserProvider } from "@/app/context/UserContext";
 import "@/app/(root)/globals.css";
+import DoctorsSideNav from "@/components/ui/doctorsSideNav";
 
 export const metadata = {
 	title: "MediCare",
@@ -14,7 +15,10 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body>
-				<UserProvider>{children}</UserProvider>
+				<UserProvider>
+					<DoctorsSideNav />
+					{children}
+				</UserProvider>
 			</body>
 		</html>
 	);

@@ -3,6 +3,7 @@
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import LoadingState from "./LoadingState";
 
 export function withRoleAccess<P extends object>(
 	WrappedComponent: React.ComponentType<P>,
@@ -19,7 +20,7 @@ export function withRoleAccess<P extends object>(
 		}, [userData, isLoading, router]);
 
 		if (isLoading) {
-			return <div>Loading...</div>;
+			return <LoadingState />;
 		}
 
 		if (!userData || !allowedRoles.includes(userData.role)) {

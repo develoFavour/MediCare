@@ -1,23 +1,34 @@
 "use client";
 
 import "@/app/(root)/globals.css";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Loader } from "lucide-react";
 
 export default function VerifyEmailContent() {
 	const [verificationStatus, setVerificationStatus] = useState<
-		"verifying" | "success" | "error"
+		"verifying" | "success" | "error" | "already-verified"
 	>("verifying");
+	const [errorMessage, setErrorMessage] = useState<string>("");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const token = searchParams.get("token");
+	const userId = searchParams.get("userId");
+	const verificationAttempted = useRef(false);
 
 	useEffect(() => {
 		const verifyEmail = async () => {
-			if (!token) {
+			// Prevent multiple verification attempts
+			if (verificationAttempted.current) {
+				return;
+			}
+
+			verificationAttempted.current = true;
+
+			if (!token || !userId) {
 				setVerificationStatus("error");
+				setErrorMessage("Missing verification parameters");
 				return;
 			}
 
@@ -25,7 +36,7 @@ export default function VerifyEmailContent() {
 				const response = await fetch("/api/users/verify-email", {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ token }),
+					body: JSON.stringify({ token, userId }),
 				});
 
 				const data = await response.json();
@@ -33,17 +44,26 @@ export default function VerifyEmailContent() {
 				if (data.success) {
 					setVerificationStatus("success");
 					setTimeout(() => router.push("/login"), 5000);
+				} else if (
+					data.error === "Invalid or expired token" &&
+					data.alreadyVerified
+				) {
+					// Handle already verified case
+					setVerificationStatus("already-verified");
+					setTimeout(() => router.push("/login"), 5000);
 				} else {
 					setVerificationStatus("error");
+					setErrorMessage(data.error || "Verification failed");
 				}
 			} catch (error) {
 				console.error("Verification error:", error);
 				setVerificationStatus("error");
+				setErrorMessage("An unexpected error occurred");
 			}
 		};
 
 		verifyEmail();
-	}, [token, router]);
+	}, [token, userId, router]);
 
 	const statusConfig = {
 		verifying: {
@@ -58,10 +78,18 @@ export default function VerifyEmailContent() {
 			message: "You will be redirected to the login page in 5 seconds.",
 			color: "text-green-500",
 		},
+		"already-verified": {
+			icon: CheckCircle,
+			title: "Email Already Verified!",
+			message:
+				"Your email has already been verified. Redirecting to login page...",
+			color: "text-green-500",
+		},
 		error: {
 			icon: XCircle,
 			title: "Verification Failed",
 			message:
+				errorMessage ||
 				"There was an error verifying your email. Please try again or contact support.",
 			color: "text-red-500",
 		},
@@ -88,7 +116,9 @@ export default function VerifyEmailContent() {
 					}}
 				>
 					<currentStatus.icon
-						className={`w-16 h-16 mx-auto ${currentStatus.color} mb-4`}
+						className={`w-16 h-16 mx-auto ${currentStatus.color} mb-4 ${
+							verificationStatus === "verifying" ? "animate-spin" : ""
+						}`}
 					/>
 				</motion.div>
 				<motion.h1

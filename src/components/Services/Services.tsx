@@ -1,6 +1,7 @@
+"use client";
 import Image from "next/image";
-import React from "react";
 import Service from "./Service";
+import { motion } from "framer-motion";
 
 const Services = () => {
 	const services = [
@@ -20,14 +21,43 @@ const Services = () => {
 			h3: "Affordable Health Care Services",
 		},
 	];
+
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.2,
+			},
+		},
+	};
+
+	const itemVariants = {
+		hidden: { y: 20, opacity: 0 },
+		visible: {
+			y: 0,
+			opacity: 1,
+			transition: {
+				type: "spring",
+				stiffness: 100,
+			},
+		},
+	};
+
 	return (
-		<section className="section lg:mt-[19rem]">
-			<div className="container">
-				<div className="lg:section-title sm:p-6 flex flex-col gap-2 justify-center">
-					<div className="in-head flex flex-col gap-2 lg:flex-col items-center justify-center">
-						<h2 className="text-[22px] text-[#2c2d3f] font-semibold text-center">
-							We Are Always Ready to Help You & Your Family
-						</h2>
+		<section className="py-20 lg:mt-[19rem] bg-gradient-to-b from-white to-blue-50">
+			<div className="container mx-auto px-4">
+				<motion.div
+					className="text-center mb-16"
+					initial={{ opacity: 0, y: 20 }}
+					whileInView={{ opacity: 1, y: 0 }}
+					viewport={{ once: true }}
+					transition={{ duration: 0.6 }}
+				>
+					<h2 className="text-3xl md:text-4xl font-bold text-[#032b53] mb-4">
+						We Are Always Ready to Help You & Your Family
+					</h2>
+					<div className="flex justify-center mb-4">
 						<Image
 							src="/section-img.png"
 							alt="services"
@@ -36,21 +66,29 @@ const Services = () => {
 							className="max-w-full h-auto w-auto"
 						/>
 					</div>
-					<p className="text-center pb-8">
+					<p className="text-gray-600 max-w-2xl mx-auto">
 						We Offer amazing Health Care Services You Can Trust
 					</p>
-				</div>
-				<div className="flex flex-col lg:flex-row justify-center gap-0 lg:gap-12">
+				</motion.div>
+
+				<motion.div
+					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+					variants={containerVariants}
+					initial="hidden"
+					whileInView="visible"
+					viewport={{ once: true }}
+				>
 					{services.map(({ icon, p, h3 }, index) => (
-						<Service
-							key={index}
-							icon={icon}
-							h3={h3}
-							p={p}
-							last={index === 2 ? "none" : ""}
-						/>
+						<motion.div key={index} variants={itemVariants}>
+							<Service
+								icon={icon}
+								h3={h3}
+								p={p}
+								last={index === 2 ? "none" : ""}
+							/>
+						</motion.div>
 					))}
-				</div>
+				</motion.div>
 			</div>
 		</section>
 	);

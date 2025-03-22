@@ -1,20 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-	LucideIcon,
+	type LucideIcon,
 	ChevronDown,
 	ChevronUp,
 	Home,
-	MessageCircle,
 	User,
 	Users,
 	PlusCircle,
 	BedDouble,
 	ClipboardList,
 	DoorOpen,
+	Settings,
+	ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/app/context/UserContext";
@@ -30,18 +31,26 @@ interface NavigationItem {
 // Define adminNavItems here if it's not imported
 const adminNavItems: NavigationItem[] = [
 	{ href: "/admin/dashboard", icon: Home, label: "Home" },
-	{ href: "/admin/messages", icon: MessageCircle, label: "Messages" },
+	{
+		href: "/admin/dashboard/appointment-request",
+		icon: ClipboardCheck,
+		label: "Appointment Request",
+	},
 	{
 		href: "/admin/doctors",
 		icon: User,
 		label: "Doctors",
 		subItems: [
 			{
-				href: "/admin/doctors/list",
+				href: "/admin/dashboard/doctors",
 				icon: ClipboardList,
 				label: "Doctors List",
 			},
-			{ href: "/admin/doctors/add", icon: PlusCircle, label: "Add Doctor" },
+			{
+				href: "/admin/dashboard/add-doctor",
+				icon: PlusCircle,
+				label: "Add Doctor",
+			},
 		],
 	},
 	{
@@ -50,7 +59,7 @@ const adminNavItems: NavigationItem[] = [
 		label: "Patients",
 		subItems: [
 			{
-				href: "/admin/patients/list",
+				href: "/admin/dashboard/patients",
 				icon: ClipboardList,
 				label: "Patients List",
 			},
@@ -73,12 +82,21 @@ const adminNavItems: NavigationItem[] = [
 			},
 		],
 	},
+	{ href: "/admin/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
 const AdminSideNav = () => {
-	const { userData } = useUser();
+	const { userData, refreshUserData } = useUser();
 	const pathname = usePathname();
 	const [openDropdowns, setOpenDropdowns] = useState<string[]>([]);
+	const [profileImageKey, setProfileImageKey] = useState(Date.now());
+
+	useEffect(() => {
+		// Force refresh the profile image when userData changes
+		if (userData?.profileImage) {
+			setProfileImageKey(Date.now());
+		}
+	}, [userData?.profileImage]);
 
 	const toggleDropdown = (label: string) => {
 		setOpenDropdowns((prev) =>
@@ -87,6 +105,8 @@ const AdminSideNav = () => {
 				: [...prev, label]
 		);
 	};
+
+	console.log("User data in AdminSideNav:", userData);
 
 	const renderNavItem = (item: NavigationItem, isSubItem = false) => {
 		const Icon = item.icon;
@@ -129,18 +149,42 @@ const AdminSideNav = () => {
 		);
 	};
 
+	// Function to get user initials for the placeholder
+	const getUserInitials = () => {
+		if (!userData?.fullName) return "";
+		const names = userData.fullName.split(" ");
+		if (names.length >= 2) {
+			return `${names[0][0]}${names[1][0]}`.toUpperCase();
+		}
+		return userData.fullName.substring(0, 2).toUpperCase();
+	};
+
 	return (
 		<nav className="dashboard-nav-bg fixed left-0 top-0 flex h-screen w-[310px] flex-col justify-between border-r border-gray-200 pt-8 text-white max-md:hidden sm:p-4 xl:py-6 xl:px-0 overflow-y-auto">
 			<div className="space-y-4">
 				<div className="px-3 border-b border-b-[#f1f1f1]">
 					<div className="flex gap-2 items-center mb-4">
-						<Image
-							src="/img/avatar.jpg"
-							height={90}
-							width={90}
-							alt="user-avatar"
-							className="h-16 w-16 rounded-full object-cover img-shadow"
-						/>
+						{userData?.profileImage ? (
+							<div className="relative h-16 w-16 rounded-full overflow-hidden img-shadow">
+								<Image
+									key={profileImageKey}
+									src={userData.profileImage || "/placeholder.svg"}
+									alt="user-avatar"
+									width={64}
+									height={64}
+									className="object-cover h-full w-full"
+									onError={() => {
+										console.error("Failed to load profile image");
+										// If image fails to load, force a refresh of user data
+										refreshUserData();
+									}}
+								/>
+							</div>
+						) : (
+							<div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold text-xl img-shadow">
+								{getUserInitials()}
+							</div>
+						)}
 						<div>
 							<p className="font-semibold text-lg text-gray-800">
 								{userData?.fullName}
@@ -153,9 +197,6 @@ const AdminSideNav = () => {
 					{adminNavItems.map((item) => renderNavItem(item))}
 				</ul>
 			</div>
-
-			{/* Remove or replace ProfileSection if it's not available */}
-			{/* <ProfileSection /> */}
 		</nav>
 	);
 };
