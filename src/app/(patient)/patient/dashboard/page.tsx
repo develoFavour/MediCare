@@ -1,33 +1,96 @@
 "use client";
 
-import PatientData from "@/components/patientDashboard/PatientData";
-import { HealthMetricsGrid } from "@/components/patientDashboard/HealthMetricChart";
-import { UpcomingAppointments } from "@/components/patientDashboard/UpcomingAppointment";
-import { HealthReminders } from "@/components/patientDashboard/HealthReminder";
-import { MedicationSchedule } from "@/components/patientDashboard/MedicationSchedule";
-import { HealthGoalsProgress } from "@/components/patientDashboard/HealthGoalProgress";
-import { RecentTestResults } from "@/components/patientDashboard/RecentTestResult";
-import { sampleDashboardData } from "@/data/sampleDashboardData";
+import { useState } from "react";
 import { withRoleAccess } from "@/components/withRoleAccess";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Plus, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-function DashboardPage() {
+// Import dashboard components
+
+import { UpcomingAppointments } from "@/components/dashboard/UpcomingAppointments";
+
+import { PatientProfile } from "@/components/dashboard/PatientProfile";
+import { QuickBooking } from "@/components/dashboard/QuickBooking";
+import { AppointmentReminders } from "@/components/dashboard/AppointmentsReminder";
+import { DoctorAvailability } from "@/components/dashboard/DoctorAvailability";
+import { HospitalAnnouncements } from "@/components/dashboard/HospitalAnnouncements";
+import { AppointmentHistory } from "@/components/dashboard/AppointmentHistory";
+import { MedicalDocuments } from "@/components/dashboard/MedicalDocuments";
+
+function PatientDashboardPage() {
+	const router = useRouter();
+	const [activeTab, setActiveTab] = useState("overview");
+
 	return (
-		<div className="flex-col md:flex dashboard-text dashboard-main-bg w-full">
-			<PatientData />
-			<div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 mt-6">
-				<div className="col-span-full">
-					<HealthMetricsGrid />
+		<div className="space-y-4 pb-8">
+			{/* Page Header */}
+			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-xl shadow-sm">
+				<div>
+					<h1 className="text-2xl font-bold text-gray-900">
+						Patient Dashboard
+					</h1>
+					<div className="flex items-center text-sm text-gray-500 mt-1">
+						<span>Home</span>
+						<ChevronRight className="h-4 w-4 mx-1" />
+						<span className="text-primary">Dashboard</span>
+					</div>
 				</div>
-				<UpcomingAppointments appointments={sampleDashboardData.appointments} />
-				<MedicationSchedule medications={sampleDashboardData.medications} />
-				<HealthReminders reminders={sampleDashboardData.reminders} />
-				<HealthGoalsProgress goals={sampleDashboardData.healthGoals} />
-				<div className="col-span-full">
-					<RecentTestResults results={sampleDashboardData.testResults} />
-				</div>
+				<Button
+					className="mt-4 sm:mt-0"
+					onClick={() => router.push("/patient/dashboard/appointments")}
+				>
+					<Plus className="mr-2 h-4 w-4" /> Book Appointment
+				</Button>
 			</div>
+
+			{/* Patient Profile Summary */}
+			<PatientProfile />
+
+			{/* Dashboard Tabs */}
+			<Tabs
+				defaultValue="overview"
+				value={activeTab}
+				onValueChange={setActiveTab}
+				className="w-full"
+			>
+				<TabsList className="grid grid-cols-3 mb-6">
+					<TabsTrigger value="overview">Overview</TabsTrigger>
+					<TabsTrigger value="appointments">Appointments</TabsTrigger>
+					<TabsTrigger value="documents">Medical Documents</TabsTrigger>
+				</TabsList>
+
+				{/* Overview Tab */}
+				<TabsContent value="overview" className="space-y-6">
+					{/* Quick Booking Section */}
+					<QuickBooking />
+
+					{/* Upcoming Appointments & Reminders */}
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<UpcomingAppointments limit={3} />
+						<AppointmentReminders />
+					</div>
+
+					{/* Doctor Availability & Hospital Announcements */}
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<DoctorAvailability />
+						<HospitalAnnouncements />
+					</div>
+				</TabsContent>
+
+				{/* Appointments Tab */}
+				<TabsContent value="appointments" className="space-y-6">
+					<AppointmentHistory />
+				</TabsContent>
+
+				{/* Medical Documents Tab */}
+				<TabsContent value="documents" className="space-y-6">
+					<MedicalDocuments />
+				</TabsContent>
+			</Tabs>
 		</div>
 	);
 }
 
-export default withRoleAccess(DashboardPage, ["patient"]);
+export default withRoleAccess(PatientDashboardPage, ["patient"]);

@@ -3,6 +3,10 @@ import { connect } from "@/dbConfig/dbConfig";
 import Appointment from "@/models/appointmentModel";
 import AppointmentRequest from "@/models/appointmentRequestModel";
 import mongoose from "mongoose";
+import {
+	sendAppointmentConfirmationEmail,
+	sendNotificationEmail,
+} from "@/utils/emailService";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -70,6 +74,47 @@ export async function POST(request: NextRequest) {
 			console.error("Error updating appointment request status:", statusError);
 			// Continue with the flow even if status update fails
 			// We'll handle this gracefully and still return the appointment
+		}
+
+		// Send confirmation email to the patient
+		try {
+			const patient = appointmentRequest.userId;
+			const doctor = appointmentRequest.assignedDoctor;
+
+			console.log(
+				"Sending appointment confirmation email to patient:",
+				patient.email
+			);
+
+			await sendAppointmentConfirmationEmail({
+				patientEmail: patient.email,
+				patientName: patient.fullName,
+				doctorName: doctor.fullName,
+				appointmentDate: new Date(date),
+				appointmentType: type || "in-person",
+				notes: notes || "",
+			});
+
+			// Also send a notification email about the scheduled appointment
+			await sendNotificationEmail({
+				email: patient.email,
+				subject: "Appointment Date Scheduled",
+				message: `Your appointment with Dr. ${
+					doctor.fullName
+				} has been scheduled for ${new Date(date).toLocaleString()}. 
+      Type: ${type || "in-person"}. 
+      ${notes ? `Additional notes: ${notes}` : ""}
+      Please make sure to arrive on time or be available for your appointment.`,
+			});
+
+			console.log("Appointment confirmation email sent successfully");
+		} catch (emailError) {
+			console.error(
+				"Error sending appointment confirmation email:",
+				emailError
+			);
+			// Don't fail the request if email sending fails
+			// Just log the error and continue
 		}
 
 		return NextResponse.json({

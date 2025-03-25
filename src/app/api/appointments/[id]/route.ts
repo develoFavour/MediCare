@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { connect } from "@/dbConfig/dbConfig";
 import Appointment from "@/models/appointmentModel";
 import mongoose from "mongoose";
+import { sendNotificationEmail } from "@/utils/emailService";
 
 // Get a specific appointment
 export async function GET(
@@ -77,6 +78,17 @@ export async function PATCH(
 		if (date) updateData.date = new Date(date);
 		if (type) updateData.type = type;
 
+		const appointment = await Appointment.findById(id)
+			.populate("userId", "fullName email")
+			.populate("doctorId", "fullName email");
+
+		if (!appointment) {
+			return NextResponse.json(
+				{ error: "Appointment not found" },
+				{ status: 404 }
+			);
+		}
+
 		const updatedAppointment = await Appointment.findByIdAndUpdate(
 			id,
 			{ $set: updateData },
@@ -85,11 +97,70 @@ export async function PATCH(
 			.populate("userId", "fullName email profileImage")
 			.populate("doctorId", "fullName email profileImage");
 
-		if (!updatedAppointment) {
-			return NextResponse.json(
-				{ error: "Appointment not found" },
-				{ status: 404 }
-			);
+		// Send notification email to patient about status change
+		if (status && status !== appointment.status) {
+			try {
+				const statusMessages = {
+					completed: `Your appointment with Dr. ${
+						appointment.doctorId.fullName
+					} on ${new Date(
+						appointment.date
+					).toLocaleString()} has been marked as completed.`,
+					cancelled: `Your appointment with Dr. ${
+						appointment.doctorId.fullName
+					} on ${new Date(
+						appointment.date
+					).toLocaleString()} has been cancelled.${
+						notes ? ` Reason: ${notes}` : ""
+					}`,
+					"no-show": `Your appointment with Dr. ${
+						appointment.doctorId.fullName
+					} on ${new Date(
+						appointment.date
+					).toLocaleString()} has been marked as a no-show as you did not attend.`,
+				};
+
+				const statusSubjects = {
+					completed: "Appointment Completed",
+					cancelled: "Appointment Cancelled",
+					"no-show": "Missed Appointment",
+				};
+
+				if (statusMessages[status as keyof typeof statusMessages]) {
+					await sendNotificationEmail({
+						email: appointment.userId.email,
+						subject: statusSubjects[status as keyof typeof statusSubjects],
+						message: statusMessages[status as keyof typeof statusMessages],
+					});
+					console.log(
+						`Status change notification sent to patient: ${appointment.userId.email}`
+					);
+				}
+			} catch (emailError) {
+				console.error("Error sending status change notification:", emailError);
+				// Don't fail the request if email sending fails
+			}
+		}
+
+		// Send notification email if appointment date is rescheduled
+		if (date && date !== appointment.date) {
+			try {
+				await sendNotificationEmail({
+					email: appointment.userId.email,
+					subject: "Appointment Rescheduled",
+					message: `Your appointment with Dr. ${
+						appointment.doctorId.fullName
+					} has been rescheduled to ${new Date(date).toLocaleString()}.${
+						notes ? ` Notes: ${notes}` : ""
+					}`,
+				});
+				console.log(
+					`Rescheduling notification sent to patient: ${appointment.userId.email}`
+				);
+			} catch (emailError) {
+				console.error("Error sending rescheduling notification:", emailError);
+				// Don't fail the request if email sending fails
+			}
 		}
 
 		return NextResponse.json({
@@ -119,14 +190,37 @@ export async function DELETE(
 			);
 		}
 
-		const deletedAppointment = await Appointment.findByIdAndDelete(id);
+		const appointment = await Appointment.findById(id)
+			.populate("userId", "email")
+			.populate("doctorId", "fullName");
 
-		if (!deletedAppointment) {
+		if (!appointment) {
 			return NextResponse.json(
 				{ error: "Appointment not found" },
 				{ status: 404 }
 			);
 		}
+
+		// Send notification email about appointment deletion
+		try {
+			await sendNotificationEmail({
+				email: appointment.userId.email,
+				subject: "Appointment Cancelled",
+				message: `Your appointment with Dr. ${
+					appointment.doctorId.fullName
+				} on ${new Date(
+					appointment.date
+				).toLocaleString()} has been cancelled.`,
+			});
+		} catch (emailError) {
+			console.error(
+				"Error sending appointment cancellation email:",
+				emailError
+			);
+			// Continue with deletion even if email fails
+		}
+
+		const deletedAppointment = await Appointment.findByIdAndDelete(id);
 
 		return NextResponse.json({
 			success: true,

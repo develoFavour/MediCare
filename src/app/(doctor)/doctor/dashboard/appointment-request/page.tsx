@@ -192,7 +192,7 @@ function AppointmentRequestPage() {
 
 	if (loading) {
 		return (
-			<div className="pl-[310px] pr-6 py-6 flex items-center justify-center min-h-screen bg-gray-50">
+			<div className="  py-6 flex items-center justify-center min-h-screen bg-gray-50">
 				<div className="text-center">
 					<Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
 					<p className="text-gray-600">Loading appointment requests...</p>
@@ -202,7 +202,7 @@ function AppointmentRequestPage() {
 	}
 
 	return (
-		<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
+		<div className=" py-6 bg-gray-50 min-h-screen">
 			<div className="mb-6">
 				<h1 className="text-2xl font-bold text-gray-800">
 					Appointment Requests

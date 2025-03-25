@@ -21,18 +21,13 @@ interface NotificationEmailParams {
 interface AppointmentConfirmationParams {
 	patientEmail: string;
 	patientName: string;
-	doctorName: Date;
+	doctorName: string;
 	appointmentDate: Date;
 	appointmentType: string;
 	notes?: string;
 }
 
-interface EmailWithTokenParams {
-	email: string;
-	emailType: "VERIFY" | "RESET";
-	userId: string;
-	token: string;
-}
+// Update the brevoClient creation to include better error handling for missing API key
 
 // Brevo API client
 const brevoClient = axios.create({
@@ -44,258 +39,73 @@ const brevoClient = axios.create({
 	},
 });
 
-// Replace the sendEmail function with this corrected version
-export const sendEmail = async (params: EmailWithTokenParams | EmailParams) => {
+export const sendEmail = async ({
+	email,
+	subject,
+	htmlContent,
+}: EmailParams) => {
 	try {
-		// Check if it's a token-based email (verification or reset)
-		if ("emailType" in params) {
-			const { email, emailType, userId, token } =
-				params as EmailWithTokenParams;
+		console.log(`Attempting to send email to: ${email} via Brevo API`);
 
-			console.log(
-				`Attempting to send ${emailType} email to: ${email} via Brevo API`
-			);
-
-			if (!email || !emailType || !userId || !token) {
-				console.error("Missing required parameters for email:", {
-					email,
-					emailType,
-					userId: !!userId,
-					token: !!token,
-				});
-				throw new Error(
-					"Email, emailType, userId, and token are all required parameters"
-				);
-			}
-
-			const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-			let subject = "";
-			let htmlContent = "";
-
-			if (emailType === "VERIFY") {
-				const verifyLink = `${appUrl}/verify-email?token=${token}&userId=${userId}`;
-				subject = "Verify Your Email for MediCare";
-				htmlContent = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Verify Your Email</title>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .container {
-                border: 1px solid #e0e0e0;
-                border-radius: 5px;
-                padding: 20px;
-              }
-              .header {
-                background-color: #116aef;
-                color: white;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-                margin: -20px -20px 20px;
-              }
-              .button {
-                display: inline-block;
-                background-color: #116aef;
-                color: white;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                margin: 20px 0;
-              }
-              .footer {
-                margin-top: 30px;
-                font-size: 12px;
-                color: #777;
-                text-align: center;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Welcome to MediCare!</h1>
-              </div>
-              <p>Thank you for signing up. Please verify your email address to complete your registration.</p>
-              <p>Click the button below to verify your email:</p>
-              <p style="text-align: center;">
-                <a href="${verifyLink}" class="button">Verify Email</a>
-              </p>
-              <p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
-              <p style="word-break: break-all;">${verifyLink}</p>
-              <p>This link will expire in 24 hours.</p>
-              <div class="footer">
-                <p>If you didn't create an account with MediCare, please ignore this email.</p>
-                <p>&copy; ${new Date().getFullYear()} MediCare. All rights reserved.</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `;
-			} else if (emailType === "RESET") {
-				const resetLink = `${appUrl}/reset-password?token=${token}&userId=${userId}`;
-				subject = "Reset Your Password for MediCare";
-				htmlContent = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Reset Your Password</title>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .container {
-                border: 1px solid #e0e0e0;
-                border-radius: 5px;
-                padding: 20px;
-              }
-              .header {
-                background-color: #116aef;
-                color: white;
-                padding: 15px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-                margin: -20px -20px 20px;
-              }
-              .button {
-                display: inline-block;
-                background-color: #116aef;
-                color: white;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 5px;
-                margin: 20px 0;
-              }
-              .footer {
-                margin-top: 30px;
-                font-size: 12px;
-                color: #777;
-                text-align: center;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>Reset Your Password</h1>
-              </div>
-              <p>We received a request to reset your password for your MediCare account.</p>
-              <p>Click the button below to reset your password:</p>
-              <p style="text-align: center;">
-                <a href="${resetLink}" class="button">Reset Password</a>
-              </p>
-              <p>If the button doesn't work, you can also copy and paste the following link into your browser:</p>
-              <p style="word-break: break-all;">${resetLink}</p>
-              <p>This link will expire in 1 hour for security reasons.</p>
-              <p>If you didn't request a password reset, please ignore this email or contact support if you have concerns.</p>
-              <div class="footer">
-                <p>&copy; ${new Date().getFullYear()} MediCare. All rights reserved.</p>
-              </div>
-            </div>
-          </body>
-          </html>
-        `;
-			}
-
-			// Send the email with the generated subject and content
-			return await sendEmailRequest(email, subject, htmlContent);
-		} else {
-			// Handle regular emails with subject and htmlContent
-			const { email, subject, htmlContent } = params as EmailParams;
-
-			console.log(`Attempting to send custom email to: ${email} via Brevo API`);
-
-			if (!email || !subject || !htmlContent) {
-				console.error("Missing required parameters for email:", {
-					email,
-					subject: !!subject,
-					htmlContent: !!htmlContent,
-				});
-				throw new Error(
-					"Email, subject, and htmlContent are all required parameters"
-				);
-			}
-
-			return await sendEmailRequest(email, subject, htmlContent);
+		// Check if API key is available
+		if (!process.env.BREVO_API_KEY) {
+			console.error("BREVO_API_KEY environment variable is not set");
+			throw new Error("Email service configuration error: API key is missing");
 		}
+
+		// Make sure we have all required fields
+		if (!email || !subject || !htmlContent) {
+			throw new Error(
+				"Email, subject, and htmlContent are all required parameters"
+			);
+		}
+
+		// Use the verified sender from your Brevo account
+		const payload = {
+			sender: {
+				name: "medicare",
+				email: "opiafavour@yahoo.com", // Use your verified sender email exactly as shown in Brevo
+			},
+			to: [
+				{
+					email: email,
+				},
+			],
+			subject: subject,
+			htmlContent: htmlContent,
+		};
+
+		console.log(
+			"Sending email with payload:",
+			JSON.stringify(payload, null, 2)
+		);
+
+		// Explicitly set the API key in the request headers to ensure it's included
+		const response = await brevoClient.post("/smtp/email", payload, {
+			headers: {
+				"api-key": process.env.BREVO_API_KEY,
+			},
+		});
+
+		console.log("Email sent successfully via Brevo API:", response.data);
+
+		return { success: true, messageId: response.data.messageId };
 	} catch (error: any) {
 		console.error("Error in sendEmail function:", error);
 		if (error.response) {
 			console.error("API error response:", error.response.data);
 		}
-		return { success: false, messageId: null, error: error.message };
+		throw new Error(`Failed to send email: ${error.message}`);
 	}
 };
-
-// Helper function to send the actual email request
-async function sendEmailRequest(
-	email: string,
-	subject: string,
-	htmlContent: string
-) {
-	// Use the verified sender from your Brevo account
-	const payload = {
-		sender: {
-			name: "medicare",
-			email: "opiafavour10@gmail.com",
-		},
-		to: [
-			{
-				email: email,
-			},
-		],
-		subject: subject,
-		htmlContent: htmlContent,
-	};
-
-	console.log("Sending email with payload:", JSON.stringify(payload, null, 2));
-
-	const response = await brevoClient.post("/smtp/email", payload);
-	console.log("Email sent successfully via Brevo API:", response.data);
-
-	return { success: true, messageId: response.data.messageId };
-}
 
 export const sendVerificationEmail = async ({
 	email,
 	userId,
 	token,
 }: VerificationEmailParams) => {
-	console.log("sendVerificationEmail called with:", { email, userId, token });
-
-	if (!email || !userId || !token) {
-		console.error("Missing required parameters for verification email:", {
-			email,
-			userId,
-			token,
-		});
-		throw new Error(
-			"Email, userId, and token are required for verification email"
-		);
-	}
-
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-	const link = `${appUrl}/verify-email?token=${token}&userId=${userId}`;
+	const link = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}&userId=${userId}`;
 	const subject = "Verify Your Email for MediCare";
-
-	console.log("Verification link:", link);
 
 	// Create a more visually appealing HTML template
 	const htmlContent = `
@@ -374,15 +184,7 @@ export const sendPasswordResetEmail = async ({
 	userId,
 	token,
 }: VerificationEmailParams) => {
-	if (!email || !userId || !token) {
-		console.error("Missing required parameters for password reset email");
-		throw new Error(
-			"Email, userId, and token are required for password reset email"
-		);
-	}
-
-	const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-	const link = `${appUrl}/reset-password?token=${token}&userId=${userId}`;
+	const link = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}&userId=${userId}`;
 	const subject = "Reset Your Password for MediCare";
 
 	const htmlContent = `
@@ -461,13 +263,6 @@ export const sendNotificationEmail = async ({
 	subject,
 	message,
 }: NotificationEmailParams) => {
-	if (!email || !subject || !message) {
-		console.error("Missing required parameters for notification email");
-		throw new Error(
-			"Email, subject, and message are required for notification email"
-		);
-	}
-
 	const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -530,15 +325,6 @@ export const sendAppointmentConfirmationEmail = async ({
 	appointmentType,
 	notes,
 }: AppointmentConfirmationParams) => {
-	if (!patientEmail || !patientName || !doctorName || !appointmentDate) {
-		console.error(
-			"Missing required parameters for appointment confirmation email"
-		);
-		throw new Error(
-			"patientEmail, patientName, doctorName, and appointmentDate are required"
-		);
-	}
-
 	const subject = "Your Appointment Has Been Scheduled";
 
 	// Format the date nicely
@@ -688,7 +474,7 @@ export const sendAppointmentConfirmationEmail = async ({
         
         <p style="text-align: center;">
           <a href="${
-						process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+						process.env.NEXT_PUBLIC_APP_URL
 					}/dashboard" class="button">View in Dashboard</a>
         </p>
         

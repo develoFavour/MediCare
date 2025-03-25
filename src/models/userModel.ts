@@ -5,6 +5,7 @@ export interface IUser {
 	fullName: string;
 	email: string;
 	password: string;
+	phoneNumber: string;
 	role: "patient" | "doctor" | "admin";
 	age: number;
 	gender: string;
@@ -28,6 +29,10 @@ const userSchema = new mongoose.Schema({
 	password: {
 		type: String,
 		required: [true, "Please provide a password"],
+	},
+	phoneNumber: {
+		type: String,
+		required: [true, "Please provide your phone number"],
 	},
 	role: {
 		type: String,

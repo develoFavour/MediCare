@@ -1,3 +1,4 @@
+import type React from "react";
 import { UserProvider } from "@/app/context/UserContext";
 import "@/app/(root)/globals.css";
 import DoctorsSideNav from "@/components/ui/doctorsSideNav";
@@ -14,10 +15,12 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<body>
+			<body className="flex min-h-screen">
 				<UserProvider>
 					<DoctorsSideNav />
-					{children}
+					<div className="flex-1 md:ml-[310px] p-4 md:p-6 bg-gray-50">
+						{children}
+					</div>
 				</UserProvider>
 			</body>
 		</html>

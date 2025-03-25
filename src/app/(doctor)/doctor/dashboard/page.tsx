@@ -82,7 +82,7 @@ function DoctorDashboard() {
 	}
 
 	return (
-		<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
+		<div className=" py-6 bg-gray-50 min-h-screen">
 			<DashboardHeader userData={userData} />
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">

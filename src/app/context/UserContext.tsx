@@ -18,6 +18,7 @@ interface UserData {
 	role: "admin" | "doctor" | "patient";
 	gender: string;
 	age: number;
+	phoneNumber: string;
 	bloodType: string;
 	profileImage?: string;
 	isApproved?: boolean;

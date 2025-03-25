@@ -219,7 +219,7 @@ function AppointmentDetailsPage() {
 
 	if (loading) {
 		return (
-			<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
+			<div className="  py-6 bg-gray-50 min-h-screen">
 				<div className="flex justify-center items-center h-64">
 					<div className="text-center">
 						<Loader2 className="h-10 w-10 mx-auto animate-spin text-blue-600 mb-4" />
@@ -232,7 +232,7 @@ function AppointmentDetailsPage() {
 
 	if (error || !appointment) {
 		return (
-			<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
+			<div className=" py-6 bg-gray-50 min-h-screen">
 				<Card>
 					<CardContent className="py-10">
 						<div className="flex flex-col items-center justify-center text-center">
@@ -261,7 +261,7 @@ function AppointmentDetailsPage() {
 	const isPastDate = new Date() > appointmentDate;
 
 	return (
-		<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
+		<div className=" py-6 bg-gray-50 min-h-screen">
 			<div className="mb-6 flex items-center">
 				<Button variant="ghost" onClick={() => router.back()} className="mr-4">
 					<ChevronLeft className="h-4 w-4 mr-2" />

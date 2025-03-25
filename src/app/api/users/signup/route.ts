@@ -84,6 +84,8 @@ export async function POST(req: NextRequest) {
 		let savedUser;
 		try {
 			savedUser = await newUser.save();
+			console.log("User saved successfully:", savedUser);
+
 			console.log("User saved successfully:", savedUser._id);
 		} catch (saveError: any) {
 			if (saveError.name === "ValidationError") {

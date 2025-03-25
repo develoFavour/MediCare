@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { clientNavItems as navItems } from "@/app/constants";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { TypeIcon as type, LucideIcon, X } from "lucide-react";
+import { type LucideIcon, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/app/context/UserContext";
 import Image from "next/image";
 import { ProfileSection } from "../patientDashboard/SideBarProfile";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface NavigationItem {
 	href: string;
@@ -18,28 +18,36 @@ interface NavigationItem {
 	label: string;
 }
 
-interface PatientDashboardSideNavProps {
-	open: boolean;
-	setOpen: (open: boolean) => void;
-}
-
-const PatientDashboardSideNav: React.FC<PatientDashboardSideNavProps> = ({
-	open,
-	setOpen,
-}) => {
+const PatientDashboardSideNav = () => {
 	const { userData, refreshUserData } = useUser();
 	const [profileImageKey, setProfileImageKey] = useState(Date.now());
+	const [imageError, setImageError] = useState(false);
+	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+	const pathname = usePathname();
 
 	useEffect(() => {
 		// Force refresh the profile image when userData changes
 		if (userData?.profileImage) {
+			console.log(
+				"Updating profile image in PatientDashboardSideNav:",
+				userData.profileImage
+			);
 			setProfileImageKey(Date.now());
+			setImageError(false);
 		}
 	}, [userData?.profileImage]);
 
-	console.log("Patient User Data", userData);
+	// Refresh user data periodically to ensure we have the latest profile image
+	useEffect(() => {
+		const refreshInterval = setInterval(() => {
+			if (imageError) {
+				console.log("Image error detected, refreshing user data");
+				refreshUserData();
+			}
+		}, 5000);
 
-	const pathname = usePathname();
+		return () => clearInterval(refreshInterval);
+	}, [imageError, refreshUserData]);
 
 	const getUserInitials = () => {
 		if (!userData?.fullName) return "";
@@ -50,22 +58,32 @@ const PatientDashboardSideNav: React.FC<PatientDashboardSideNavProps> = ({
 		return userData.fullName.substring(0, 2).toUpperCase();
 	};
 
+	// Add cache busting to profile image URL
+	const getProfileImageUrl = () => {
+		if (!userData?.profileImage) return null;
+		// Split by ? to remove any existing query params, then add our timestamp
+		return `${userData.profileImage.split("?")[0]}?t=${profileImageKey}`;
+	};
+
 	const sidebarContent = (
 		<div className="flex flex-col h-full">
 			<div className="space-y-4 flex-1">
 				<div className="px-3 py-2 border-b border-b-[#f1f1f1]">
 					<div className="flex items-center gap-2 mb-4">
-						{userData?.profileImage ? (
+						{userData?.profileImage && !imageError ? (
 							<div className="relative h-16 w-16 rounded-full overflow-hidden img-shadow">
 								<Image
 									key={profileImageKey}
-									src={userData.profileImage || "/placeholder.svg"}
+									src={getProfileImageUrl() || "/placeholder.svg"}
 									alt="user-avatar"
 									width={64}
 									height={64}
 									className="object-cover h-full w-full"
 									onError={() => {
-										console.error("Failed to load profile image");
+										console.error(
+											"Failed to load profile image in PatientDashboardSideNav"
+										);
+										setImageError(true);
 										// If image fails to load, force a refresh of user data
 										refreshUserData();
 									}}
@@ -102,7 +120,7 @@ const PatientDashboardSideNav: React.FC<PatientDashboardSideNavProps> = ({
 											? "text-[#116aef] bg-[#e9f2ff] hover:bg-[#e9f2ff]"
 											: "hover:text-white nav-list-item"
 									)}
-									onClick={() => setOpen(false)}
+									onClick={() => setIsMobileMenuOpen(false)}
 								>
 									<Icon
 										className={cn(
@@ -125,23 +143,27 @@ const PatientDashboardSideNav: React.FC<PatientDashboardSideNavProps> = ({
 
 	return (
 		<>
-			<nav className="dashboard-nav-bg fixed left-0 top-0 hidden lg:flex h-screen w-[310px] flex-col justify-between border-r border-gray-200 pt-8 text-white sm:p-4 xl:py-6 xl:px-0 overflow-y-auto">
+			{/* Desktop Sidebar */}
+			<nav className="dashboard-nav-bg fixed left-0 top-0 hidden md:flex h-screen w-[310px] flex-col justify-between border-r border-gray-200 pt-8 text-white sm:p-4 xl:py-6 xl:px-0 overflow-y-auto">
 				{sidebarContent}
 			</nav>
 
-			<Sheet open={open} onOpenChange={setOpen}>
-				<SheetContent side="left" className="p-0 w-[310px] dashboard-nav-bg">
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={() => setOpen(false)}
-						className="absolute right-4 top-4 text-white"
-					>
-						<X className="h-6 w-6" />
-					</Button>
-					{sidebarContent}
-				</SheetContent>
-			</Sheet>
+			{/* Mobile Menu Button - Fixed at the top */}
+			<div className="fixed top-4 right-0 z-50 md:hidden">
+				<Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+					<SheetTrigger asChild>
+						<Button variant="outline" size="icon" className="rounded-full">
+							<Menu className="h-5 w-5" />
+							<span className="sr-only">Toggle Menu</span>
+						</Button>
+					</SheetTrigger>
+					<SheetContent side="left" className="p-0 w-[280px] sm:w-[350px]">
+						<div className="dashboard-nav-bg h-full overflow-y-auto py-6">
+							{sidebarContent}
+						</div>
+					</SheetContent>
+				</Sheet>
+			</div>
 		</>
 	);
 };

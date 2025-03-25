@@ -37,7 +37,7 @@ export async function PUT(
 			subject: "Appointment Request Update",
 			message: `Your appointment request has been ${status}. ${
 				status === "approved"
-					? `You have been assigned to Dr. ${updatedRequest.assignedDoctor.fullName}. Wait for Date and Time confirmation`
+					? `You have been assigned to Dr. ${updatedRequest.assignedDoctor.fullName}. The doctor will schedule a date and time for your appointment soon. You will receive another email when the appointment is scheduled.`
 					: ""
 			}`,
 		});
@@ -47,7 +47,7 @@ export async function PUT(
 			await sendNotificationEmail({
 				email: updatedRequest.assignedDoctor.email,
 				subject: "New Appointment Assigned",
-				message: `You have been assigned a new appointment with patient ${updatedRequest.userId.fullName}. Please check your dashboard for more details.`,
+				message: `You have been assigned a new appointment with patient ${updatedRequest.userId.fullName}. Please check your dashboard to schedule a date and time for this appointment.`,
 			});
 		}
 

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardSkeleton() {
 	return (
-		<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
+		<div className="py-6 bg-gray-50 min-h-screen">
 			{/* Header Skeleton */}
 			<div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:justify-between md:items-center">
 				<div>
