@@ -3,7 +3,7 @@ import User from "@/models/userModel";
 import bcrypt from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { sendEmail } from "@/utils/emailService";
+import { sendVerificationEmail } from "@/utils/emailService";
 
 connect();
 
@@ -110,9 +110,9 @@ export async function POST(req: NextRequest) {
 				throw new Error("Missing required parameters for verification email");
 			}
 
-			const emailResult = await sendEmail({
+			// Use sendVerificationEmail instead of sendEmail with the correct parameters
+			const emailResult = await sendVerificationEmail({
 				email: savedUser.email,
-				emailType: "VERIFY",
 				userId: savedUser._id.toString(),
 				token: verificationToken,
 			});
