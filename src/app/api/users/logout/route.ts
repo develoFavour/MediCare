@@ -1,43 +1,22 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
 	try {
-		// Create the response object
-		const response = NextResponse.json(
-			{
-				message: "Logout successful",
-				success: true,
-			},
-			{ status: 200 }
-		);
+		// Create a response that redirects to the login page
+		const response = NextResponse.redirect(new URL("/login", request.url));
 
-		// Clear both token and refreshToken cookies with secure options
-		response.cookies.set("token", "", {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			path: "/",
-			expires: new Date(0),
-		});
+		// Clear all auth cookies
+		response.cookies.delete("token");
+		response.cookies.delete("refreshToken");
 
-		response.cookies.set("refreshToken", "", {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "strict",
-			path: "/",
-			expires: new Date(0),
-		});
+		// You might also want to clear any other auth-related cookies
+		response.cookies.delete("next-auth.session-token");
+		response.cookies.delete("next-auth.callback-url");
+		response.cookies.delete("next-auth.csrf-token");
 
 		return response;
-	} catch (error: any) {
+	} catch (error) {
 		console.error("Logout error:", error);
-
-		return NextResponse.json(
-			{
-				error: "An error occurred during logout",
-				success: false,
-			},
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: "Failed to logout" }, { status: 500 });
 	}
 }
