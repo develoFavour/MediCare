@@ -15,12 +15,16 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
+import { format, isPast, isToday, addDays } from "date-fns";
 
 interface Appointment {
 	_id: string;
-	doctor: {
-		_id: string;
+	doctorId: {
+		email: string;
 		fullName: string;
+		profileImage: string;
+		_id: string;
 		specialty: string;
 	};
 	date: string;
@@ -36,6 +40,7 @@ interface UpcomingAppointmentsProps {
 }
 
 export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
+	const { userData } = useUser();
 	const router = useRouter();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
@@ -48,9 +53,10 @@ export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
 				setError(null);
 
 				const response = await axios.get(
-					`/api/patient/appointments/upcoming${limit ? `?limit=${limit}` : ""}`
+					`/api/appointments?userId=${userData?._id}`
 				);
 				setAppointments(response.data.appointments);
+				console.log(response.data.appointments);
 			} catch (err) {
 				console.error("Error fetching upcoming appointments:", err);
 				setError("Failed to load appointments");
@@ -111,7 +117,7 @@ export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
 						<p className="mb-4">No upcoming appointments found.</p>
 						<Button
 							variant="outline"
-							onClick={() => router.push("/patient/appointments/book")}
+							onClick={() => router.push("patient/dashboard/appointment")}
 						>
 							Book New Appointment
 						</Button>
@@ -119,17 +125,17 @@ export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
 				) : (
 					<div className="space-y-4">
 						{appointments.map((appointment) => (
-							<div key={appointment._id} className="p-3 bg-gray-50 rounded-lg">
+							<div key={appointment?._id} className="p-3 bg-gray-50 rounded-lg">
 								<div className="flex justify-between items-start">
 									<div>
 										<h3 className="font-medium text-gray-900">
-											{appointment.doctor.fullName}
+											{appointment?.doctorId?.fullName}
 										</h3>
 										<Badge
 											variant="outline"
 											className="mt-1 bg-primary/10 text-primary border-primary/20"
 										>
-											{appointment.doctor.specialty}
+											{appointment?.doctorId?.specialty}
 										</Badge>
 									</div>
 									<div className="flex items-center gap-1">
@@ -148,9 +154,9 @@ export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
 											variant="outline"
 											className="flex items-center gap-1 bg-gray-50"
 										>
-											{getAppointmentTypeIcon(appointment.type)}
-											<span className="capitalize hidden xs:inline">
-												{appointment.type}
+											{getAppointmentTypeIcon(appointment?.type)}
+											<span className="capitalize xs:inline">
+												{appointment?.type}
 											</span>
 										</Badge>
 									</div>
@@ -158,7 +164,7 @@ export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
 								<div className="mt-2 space-y-1">
 									<div className="flex items-center text-sm text-gray-600">
 										<Calendar className="w-4 h-4 mr-2 text-primary" />
-										{new Date(appointment.date).toLocaleDateString("en-US", {
+										{new Date(appointment?.date).toLocaleDateString("en-US", {
 											year: "numeric",
 											month: "long",
 											day: "numeric",
@@ -166,21 +172,17 @@ export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
 									</div>
 									<div className="flex items-center text-sm text-gray-600">
 										<Clock className="w-4 h-4 mr-2 text-primary" />
-										{appointment.time}
+										{format(new Date(appointment.date), "h:mm a")}
 									</div>
-									{appointment.location && (
-										<div className="flex items-center text-sm text-gray-600">
-											<MapPin className="w-4 h-4 mr-2 text-primary" />
-											{appointment.location}
-										</div>
-									)}
 								</div>
 								<div className="mt-3 flex justify-end gap-2">
 									<Button
 										size="sm"
 										variant="outline"
 										onClick={() =>
-											router.push(`/patient/appointments/${appointment._id}`)
+											router.push(
+												`/patient/dashboard/upcoming-appointments/${appointment?._id}`
+											)
 										}
 									>
 										Details
@@ -191,7 +193,7 @@ export function UpcomingAppointments({ limit }: UpcomingAppointmentsProps) {
 						<Button
 							variant="outline"
 							className="w-full"
-							onClick={() => router.push("/patient/appointments/book")}
+							onClick={() => router.push("/patient/dashboard/appointment")}
 						>
 							Book New Appointment
 						</Button>

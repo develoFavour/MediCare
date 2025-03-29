@@ -35,15 +35,11 @@ export const clientNavItems = [
 		label: "Cancelled Appointments",
 	},
 	{
-		href: "/patient/dashboard/ask-medi-ai",
-		icon: BotMessageSquare,
-		label: "Ask Medi-AI",
+		href: "/patient/dashboard/prescriptions",
+		icon: FileTextIcon,
+		label: "Your Prescriptions",
 	},
-	{
-		href: "/patient/dashboard/calendar",
-		icon: CalendarIcon,
-		label: "Patient's Calendar",
-	},
+
 	{
 		href: "/patient/dashboard/settings",
 		icon: SettingsIcon,

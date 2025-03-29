@@ -29,9 +29,10 @@ import {
 	CheckCircle,
 	XCircle,
 	AlertTriangle,
+	Pill,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import { format } from "date-fns";
 import Image from "next/image";
 
@@ -63,6 +64,7 @@ function AppointmentDetailsPage() {
 	const [appointment, setAppointment] = useState<Appointment | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [hasPrescription, setHasPrescription] = useState(false);
 
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [dialogAction, setDialogAction] = useState<
@@ -83,6 +85,15 @@ function AppointmentDetailsPage() {
 
 			const data = await response.json();
 			setAppointment(data.appointment);
+
+			// Check if prescription exists for this appointment
+			const prescriptionResponse = await fetch(
+				`/api/prescriptions?appointmentId=${id}`
+			);
+			if (prescriptionResponse.ok) {
+				const prescriptionData = await prescriptionResponse.json();
+				setHasPrescription(!!prescriptionData.prescription);
+			}
 		} catch (err: any) {
 			console.error("Error fetching appointment details:", err);
 			setError(err.message || "Failed to load appointment details");
@@ -90,6 +101,7 @@ function AppointmentDetailsPage() {
 			setLoading(false);
 		}
 	}, [id]);
+
 	useEffect(() => {
 		if (userData?._id && id) {
 			fetchAppointmentDetails();
@@ -219,7 +231,7 @@ function AppointmentDetailsPage() {
 
 	if (loading) {
 		return (
-			<div className="  py-6 bg-gray-50 min-h-screen">
+			<div className="container mx-auto py-6 bg-gray-50 min-h-screen">
 				<div className="flex justify-center items-center h-64">
 					<div className="text-center">
 						<Loader2 className="h-10 w-10 mx-auto animate-spin text-blue-600 mb-4" />
@@ -232,7 +244,7 @@ function AppointmentDetailsPage() {
 
 	if (error || !appointment) {
 		return (
-			<div className=" py-6 bg-gray-50 min-h-screen">
+			<div className="container mx-auto py-6 bg-gray-50 min-h-screen">
 				<Card>
 					<CardContent className="py-10">
 						<div className="flex flex-col items-center justify-center text-center">
@@ -261,7 +273,7 @@ function AppointmentDetailsPage() {
 	const isPastDate = new Date() > appointmentDate;
 
 	return (
-		<div className=" py-6 bg-gray-50 min-h-screen">
+		<div className="container mx-auto py-6 bg-gray-50 min-h-screen">
 			<div className="mb-6 flex items-center">
 				<Button variant="ghost" onClick={() => router.back()} className="mr-4">
 					<ChevronLeft className="h-4 w-4 mr-2" />
@@ -425,13 +437,23 @@ function AppointmentDetailsPage() {
 						<CardContent className="pt-6">
 							<div className="flex items-center mb-4">
 								<div className="relative h-16 w-16 rounded-full overflow-hidden mr-4">
-									<Image
-										src={appointment.userId?.profileImage || ""}
-										alt={appointment.userId?.fullName}
-										width={64}
-										height={64}
-										className="object-cover"
-									/>
+									{appointment.userId?.profileImage ? (
+										<Image
+											src={
+												appointment.userId.profileImage || "/placeholder.svg"
+											}
+											alt={appointment.userId.fullName}
+											width={64}
+											height={64}
+											className="object-cover"
+										/>
+									) : (
+										<div className="bg-gray-200 h-full w-full flex items-center justify-center">
+											<span className="text-gray-500 text-xl font-semibold">
+												{appointment.userId.fullName.charAt(0)}
+											</span>
+										</div>
+									)}
 								</div>
 								<div>
 									<h3 className="font-medium text-gray-800 text-lg">
@@ -475,9 +497,19 @@ function AppointmentDetailsPage() {
 									<Calendar className="h-4 w-4 mr-2" />
 									Schedule Follow-up
 								</Button>
-								<Button variant="outline" className="w-full justify-start">
-									<FileText className="h-4 w-4 mr-2" />
-									Create Prescription
+								<Button
+									variant="outline"
+									className="w-full justify-start"
+									onClick={() =>
+										router.push(
+											`/doctor/dashboard/prescriptions/${appointment._id}`
+										)
+									}
+								>
+									<Pill className="h-4 w-4 mr-2" />
+									{hasPrescription
+										? "Edit Prescription"
+										: "Create Prescription"}
 								</Button>
 							</div>
 						</CardContent>
@@ -563,6 +595,7 @@ function AppointmentDetailsPage() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+			<Toaster position="top-center" />
 		</div>
 	);
 }

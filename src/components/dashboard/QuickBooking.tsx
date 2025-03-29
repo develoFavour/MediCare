@@ -27,37 +27,40 @@ import { format } from "date-fns";
 import { CalendarIcon, Clock, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
+import axios from "axios";
+import { useUser } from "@/app/context/UserContext";
+import toast from "react-hot-toast";
 
 export function QuickBooking() {
+	const { userData } = useUser();
 	const router = useRouter();
-	const [department, setDepartment] = useState("");
-	const [date, setDate] = useState<Date | undefined>(undefined);
-	const [timeSlot, setTimeSlot] = useState("");
+	const [reason, setReason] = useState<string>("");
+	const [loading, setLoading] = useState<boolean>(false);
+	console.log(reason);
 
-	const handleProceed = () => {
-		if (department && date && timeSlot) {
-			// In a real implementation, you would pass these values to the booking page
-			router.push(
-				`/patient/appointments/book?department=${department}&date=${date.toISOString()}&time=${timeSlot}`
-			);
+	const handleSubmit = async () => {
+		try {
+			setLoading(true);
+			const response = await axios.post("/api/appointment-request", {
+				userId: userData?._id,
+				symptoms: reason,
+			});
+			if (response.status === 200) {
+				toast.success("Appointment request submitted successfully.");
+				router.push("/patient/dashboard/appointment");
+				setReason("");
+				setLoading(false);
+			} else {
+				toast.error("Failed to submit appointment");
+				setLoading(false);
+			}
+			console.log(response);
+			setLoading(false);
+		} catch (error) {
+			console.log(error);
 		}
 	};
-
-	// Mock time slots
-	const timeSlots = [
-		"09:00 AM",
-		"09:30 AM",
-		"10:00 AM",
-		"10:30 AM",
-		"11:00 AM",
-		"11:30 AM",
-		"02:00 PM",
-		"02:30 PM",
-		"03:00 PM",
-		"03:30 PM",
-		"04:00 PM",
-		"04:30 PM",
-	];
 
 	return (
 		<Card className="bg-white shadow-sm">
@@ -66,102 +69,22 @@ export function QuickBooking() {
 					Quick Appointment Booking
 				</CardTitle>
 				<CardDescription>
-					Select department, date and time to quickly book an appointment
+					Book an immediate appointment with a doctor.{" "}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<div className="space-y-2">
-						<label className="text-sm font-medium text-gray-700">
-							Department
-						</label>
-						<Select value={department} onValueChange={setDepartment}>
-							<SelectTrigger>
-								<SelectValue placeholder="Select department" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="cardiology">Cardiology</SelectItem>
-								<SelectItem value="dermatology">Dermatology</SelectItem>
-								<SelectItem value="neurology">Neurology</SelectItem>
-								<SelectItem value="orthopedics">Orthopedics</SelectItem>
-								<SelectItem value="pediatrics">Pediatrics</SelectItem>
-								<SelectItem value="gynecology">Gynecology</SelectItem>
-								<SelectItem value="ophthalmology">Ophthalmology</SelectItem>
-								<SelectItem value="dentistry">Dentistry</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-
-					<div className="space-y-2">
-						<label className="text-sm font-medium text-gray-700">Date</label>
-						<Popover>
-							<PopoverTrigger asChild>
-								<Button
-									variant="outline"
-									className={cn(
-										"w-full justify-start text-left font-normal",
-										!date && "text-muted-foreground"
-									)}
-								>
-									<CalendarIcon className="mr-2 h-4 w-4" />
-									{date ? format(date, "PPP") : "Select date"}
-								</Button>
-							</PopoverTrigger>
-							<PopoverContent className="w-auto p-0" align="start">
-								<Calendar
-									mode="single"
-									selected={date}
-									onSelect={setDate}
-									initialFocus
-									disabled={(date) =>
-										date < new Date() ||
-										date >
-											new Date(new Date().setMonth(new Date().getMonth() + 3))
-									}
-								/>
-							</PopoverContent>
-						</Popover>
-					</div>
-
-					<div className="space-y-2">
-						<label className="text-sm font-medium text-gray-700">
-							Time Slot
-						</label>
-						<Select
-							value={timeSlot}
-							onValueChange={setTimeSlot}
-							disabled={!date}
-						>
-							<SelectTrigger>
-								<SelectValue placeholder="Select time">
-									{timeSlot ? (
-										<div className="flex items-center">
-											<Clock className="mr-2 h-4 w-4" />
-											{timeSlot}
-										</div>
-									) : (
-										"Select time"
-									)}
-								</SelectValue>
-							</SelectTrigger>
-							<SelectContent>
-								{timeSlots.map((slot) => (
-									<SelectItem key={slot} value={slot}>
-										<div className="flex items-center">
-											<Clock className="mr-2 h-4 w-4" />
-											{slot}
-										</div>
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
+				<div>
+					<Input
+						type="text"
+						placeholder="Your Appointment reason"
+						onChange={(e) => setReason(e.target.value)}
+					/>
 				</div>
 			</CardContent>
 			<CardFooter className="flex justify-end">
 				<Button
-					onClick={handleProceed}
-					disabled={!department || !date || !timeSlot}
+					onClick={handleSubmit}
+					disabled={!reason}
 					className="flex items-center"
 				>
 					Proceed to Booking <ArrowRight className="ml-2 h-4 w-4" />

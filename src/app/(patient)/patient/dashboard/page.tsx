@@ -13,9 +13,7 @@ import { UpcomingAppointments } from "@/components/dashboard/UpcomingAppointment
 
 import { PatientProfile } from "@/components/dashboard/PatientProfile";
 import { QuickBooking } from "@/components/dashboard/QuickBooking";
-import { AppointmentReminders } from "@/components/dashboard/AppointmentsReminder";
-import { DoctorAvailability } from "@/components/dashboard/DoctorAvailability";
-import { HospitalAnnouncements } from "@/components/dashboard/HospitalAnnouncements";
+
 import { AppointmentHistory } from "@/components/dashboard/AppointmentHistory";
 import { MedicalDocuments } from "@/components/dashboard/MedicalDocuments";
 
@@ -39,7 +37,7 @@ function PatientDashboardPage() {
 				</div>
 				<Button
 					className="mt-4 sm:mt-0"
-					onClick={() => router.push("/patient/dashboard/appointments")}
+					onClick={() => router.push("/patient/dashboard/appointment")}
 				>
 					<Plus className="mr-2 h-4 w-4" /> Book Appointment
 				</Button>
@@ -67,16 +65,11 @@ function PatientDashboardPage() {
 					<QuickBooking />
 
 					{/* Upcoming Appointments & Reminders */}
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div className="grid gap-6">
 						<UpcomingAppointments limit={3} />
-						<AppointmentReminders />
 					</div>
 
 					{/* Doctor Availability & Hospital Announcements */}
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-						<DoctorAvailability />
-						<HospitalAnnouncements />
-					</div>
 				</TabsContent>
 
 				{/* Appointments Tab */}

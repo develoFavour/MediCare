@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server";
 
 function verifyToken(token: string): { isValid: boolean; payload: any } {
 	try {
-		// Simple JWT verification without crypto
 		const [headerB64, payloadB64] = token.split(".");
 		const payload = JSON.parse(atob(payloadB64));
 		const now = Math.floor(Date.now() / 1000);

@@ -25,10 +25,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
+import { format, isPast, isToday, addDays } from "date-fns";
 
 interface Appointment {
 	_id: string;
-	doctor: {
+	doctorId: {
 		_id: string;
 		fullName: string;
 		specialty: string;
@@ -42,13 +44,15 @@ interface Appointment {
 }
 
 export function AppointmentHistory() {
+	const { userData } = useUser();
 	const router = useRouter();
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [upcomingAppointments, setUpcomingAppointments] = useState<
-		Appointment[]
-	>([]);
-	const [pastAppointments, setPastAppointments] = useState<Appointment[]>([]);
+	const [appointments, setAppointments] = useState<Appointment[]>([]);
+	// const [upcomingAppointments, setUpcomingAppointments] = useState<
+	// 	Appointment[]
+	// >([]);
+	// const [pastAppointments, setPastAppointments] = useState<Appointment[]>([]);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [typeFilter, setTypeFilter] = useState("all");
@@ -60,14 +64,16 @@ export function AppointmentHistory() {
 				setError(null);
 
 				// Fetch upcoming appointments
-				const upcomingResponse = await axios.get(
-					"/api/patient/appointments/upcoming"
+				const response = await axios.get(
+					`/api/appointments?userId=${userData?._id}`
 				);
-				setUpcomingAppointments(upcomingResponse.data.appointments);
+				setAppointments(response.data.appointments);
+
+				// setUpcomingAppointments(upcomingResponse.data.appointments);
 
 				// Fetch past appointments
-				const pastResponse = await axios.get("/api/patient/appointments/past");
-				setPastAppointments(pastResponse.data.appointments);
+				// const pastResponse = await axios.get("/api/patient/appointments/past");
+				// setPastAppointments(pastResponse.data.appointments);
 			} catch (err) {
 				console.error("Error fetching appointments:", err);
 				setError("Failed to load appointments");
@@ -78,6 +84,15 @@ export function AppointmentHistory() {
 
 		fetchAppointments();
 	}, []);
+	const upcomingAppointments = appointments.filter(
+		(appointment) =>
+			!isPast(new Date(appointment.date)) && appointment.status !== "cancelled"
+	);
+
+	const pastAppointments = appointments.filter(
+		(appointment) =>
+			isPast(new Date(appointment.date)) || appointment.status === "cancelled"
+	);
 
 	const getAppointmentTypeIcon = (type: string) => {
 		switch (type) {
@@ -96,8 +111,12 @@ export function AppointmentHistory() {
 			// Search term filter
 			const matchesSearch =
 				searchTerm === "" ||
-				apt.doctor?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				apt.doctor?.specialty.toLowerCase().includes(searchTerm.toLowerCase());
+				apt.doctorId?.fullName
+					.toLowerCase()
+					.includes(searchTerm.toLowerCase()) ||
+				apt.doctorId?.specialty
+					.toLowerCase()
+					.includes(searchTerm.toLowerCase());
 
 			// Status filter
 			const matchesStatus =
@@ -204,13 +223,13 @@ export function AppointmentHistory() {
 										<div className="flex flex-col md:flex-row md:justify-between md:items-center">
 											<div>
 												<h3 className="font-medium text-gray-900 text-lg">
-													{appointment.doctor.fullName}
+													{appointment.doctorId?.fullName}
 												</h3>
 												<Badge
 													variant="outline"
 													className="mt-1 bg-primary/10 text-primary border-primary/20"
 												>
-													{appointment.doctor.specialty}
+													{appointment.doctorId?.specialty}
 												</Badge>
 											</div>
 											<div className="flex items-center gap-2 mt-2 md:mt-0">
@@ -250,14 +269,8 @@ export function AppointmentHistory() {
 												</div>
 												<div className="flex items-center text-sm text-gray-600">
 													<Clock className="w-4 h-4 mr-2 text-primary" />
-													{appointment.time}
+													{format(new Date(appointment.date), "h:mm a")}
 												</div>
-												{appointment.location && (
-													<div className="flex items-center text-sm text-gray-600">
-														<MapPin className="w-4 h-4 mr-2 text-primary" />
-														{appointment.location}
-													</div>
-												)}
 											</div>
 											<div>
 												{appointment.notes && (
@@ -328,13 +341,13 @@ export function AppointmentHistory() {
 										<div className="flex flex-col md:flex-row md:justify-between md:items-center">
 											<div>
 												<h3 className="font-medium text-gray-900 text-lg">
-													{appointment.doctor.fullName}
+													{appointment.doctorId?.fullName}
 												</h3>
 												<Badge
 													variant="outline"
 													className="mt-1 bg-primary/10 text-primary border-primary/20"
 												>
-													{appointment.doctor.specialty}
+													{appointment.doctorId?.specialty}
 												</Badge>
 											</div>
 											<Badge
@@ -361,7 +374,10 @@ export function AppointmentHistory() {
 												</div>
 												<div className="flex items-center text-sm text-gray-600">
 													<Clock className="w-4 h-4 mr-2 text-primary" />
-													{appointment.time}
+
+													<span>
+														{format(new Date(appointment.date), "h:mm a")}
+													</span>
 												</div>
 												<div className="flex items-center text-sm text-gray-600">
 													{getAppointmentTypeIcon(appointment.type)}
@@ -396,7 +412,7 @@ export function AppointmentHistory() {
 												size="sm"
 												onClick={() =>
 													router.push(
-														`/patient/appointments/book?doctor=${appointment.doctor._id}`
+														`/patient/appointments/book?doctor=${appointment.doctorId._id}`
 													)
 												}
 											>
