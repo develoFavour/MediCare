@@ -29,17 +29,28 @@ export default function DashboardHeader({ userData }: DashboardHeaderProps) {
 
 	const handleLogout = async () => {
 		try {
-			const response = await fetch("/api/users/logout");
-			const data = await response.json();
+			// Start showing loading state
+			toast.loading("Logging out...");
 
-			if (data.success) {
+			// Make the request to the logout endpoint
+			const response = await fetch("/api/users/logout", {
+				method: "GET",
+				credentials: "include", // Important to include cookies
+			});
+
+			if (response.ok) {
+				toast.dismiss();
 				toast.success("Logged out successfully");
-				router.push("/login");
+
+				// Use window.location for a full page refresh
+				window.location.href = "/login";
 			} else {
+				toast.dismiss();
 				toast.error("Logout failed");
 			}
 		} catch (error) {
 			console.error("Logout error:", error);
+			toast.dismiss();
 			toast.error("An error occurred during logout");
 		}
 	};
