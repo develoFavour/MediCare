@@ -61,7 +61,7 @@ export default function AddDoctor() {
 	const [age, setAge] = useState("");
 	const [gender, setGender] = useState("");
 	const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
-	const [phone, setPhone] = useState("");
+	const [phoneNumber, setPhone] = useState("");
 	const [address, setAddress] = useState("");
 	const [bio, setBio] = useState("");
 	const [education, setEducation] = useState("");
@@ -182,7 +182,7 @@ export default function AddDoctor() {
 				formData.append("age", age);
 				formData.append("gender", gender);
 				formData.append("dateOfBirth", dateOfBirth?.toISOString() || "");
-				formData.append("phone", phone || "");
+				formData.append("phoneNumber", phoneNumber || "");
 				formData.append("address", address || "");
 				formData.append("bio", bio || "");
 				formData.append("education", education || "");
@@ -211,7 +211,7 @@ export default function AddDoctor() {
 					age: Number(age),
 					gender,
 					dateOfBirth: dateOfBirth?.toISOString(),
-					phone: phone || undefined,
+					phoneNumber: phoneNumber || undefined,
 					address: address || undefined,
 					bio: bio || undefined,
 					education: education || undefined,
@@ -251,7 +251,6 @@ export default function AddDoctor() {
 			router.push("/admin/dashboard/doctors");
 		}, 3000);
 
-		// Reset form fields
 		setFullName("");
 		setEmail("");
 		setPassword("");
@@ -517,13 +516,13 @@ export default function AddDoctor() {
 											</div>
 										</div>
 										<div className="space-y-2">
-											<Label htmlFor="phone" className="text-gray-700">
+											<Label htmlFor="phoneNumber" className="text-gray-700">
 												<Phone className="h-4 w-4 inline mr-2" />
 												Phone Number
 											</Label>
 											<Input
-												id="phone"
-												value={phone}
+												id="phoneNumber"
+												value={phoneNumber}
 												onChange={(e) => setPhone(e.target.value)}
 												placeholder="+1 (555) 123-4567"
 												className="border-gray-300 focus:border-[#116aef] focus:ring-[#116aef]"

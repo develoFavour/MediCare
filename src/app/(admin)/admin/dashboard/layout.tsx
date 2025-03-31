@@ -18,7 +18,7 @@ export default function RootLayout({
 			<body className="flex min-h-screen">
 				<UserProvider>
 					<AdminSideNav />
-					<div className="flex-1 md:ml-[310px] p-4 md:p-6">{children}</div>
+					<div className="flex-1 md:ml-[310px]">{children}</div>
 				</UserProvider>
 			</body>
 		</html>

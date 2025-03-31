@@ -1,11 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { connect } from "@/dbConfig/dbConfig";
 import User from "@/models/userModel";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
 import mongoose from "mongoose";
+import { put } from "@vercel/blob";
 
 // Connect to database
 connect();
@@ -49,45 +46,18 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Create unique filename
+		// Generate a unique filename with timestamp
+		const timestamp = new Date().getTime();
 		const fileExtension = image.name.split(".").pop();
-		const fileName = `${uuidv4()}.${fileExtension}`;
+		const fileName = `profile-${userId}-${timestamp}.${fileExtension}`;
 
-		// Create directory path
-		const publicDir = path.join(process.cwd(), "public");
-		const uploadsDir = path.join(publicDir, "uploads");
+		// Upload to Vercel Blob Storage
+		const blob = await put(fileName, image, {
+			access: "public",
+			contentType: image.type,
+		});
 
-		console.log("Saving image to:", path.join(uploadsDir, fileName));
-
-		// Ensure the directories exist
-		try {
-			// Create public directory if it doesn't exist
-			if (!fs.existsSync(publicDir)) {
-				await mkdir(publicDir, { recursive: true });
-			}
-
-			// Create uploads directory if it doesn't exist
-			if (!fs.existsSync(uploadsDir)) {
-				await mkdir(uploadsDir, { recursive: true });
-			}
-
-			// Now write the file
-			await writeFile(
-				path.join(uploadsDir, fileName),
-				new Uint8Array(await image.arrayBuffer())
-			);
-			console.log("Image file saved successfully");
-		} catch (error) {
-			console.error("Error saving file:", error);
-			return NextResponse.json(
-				{ error: "Failed to save image" },
-				{ status: 500 }
-			);
-		}
-
-		// Update user in database
-		const imageUrl = `/uploads/${fileName}`;
-		console.log("Updating user in database with imageUrl:", imageUrl);
+		console.log("Image uploaded to Vercel Blob:", blob.url);
 
 		// Ensure userId is a valid ObjectId
 		let objectId;
@@ -113,7 +83,7 @@ export async function POST(request: NextRequest) {
 		// Then update the user with $set operator
 		const updatedUser = await User.findByIdAndUpdate(
 			objectId,
-			{ $set: { profileImage: imageUrl } },
+			{ $set: { profileImage: blob.url } },
 			{ new: true }
 		);
 
@@ -130,7 +100,7 @@ export async function POST(request: NextRequest) {
 
 		return NextResponse.json({
 			message: "Profile image updated successfully",
-			imageUrl,
+			imageUrl: blob.url,
 			success: true,
 			user: {
 				_id: updatedUser._id,

@@ -209,7 +209,7 @@ const AdminSideNav = () => {
 								onError={() => {
 									console.error("Failed to load profile image in AdminSideNav");
 									setImageError(true);
-									// If image fails to load, force a refresh of user data
+
 									refreshUserData();
 								}}
 							/>

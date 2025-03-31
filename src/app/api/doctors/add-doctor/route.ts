@@ -71,8 +71,16 @@ export async function POST(req: NextRequest) {
 			reqBody = await req.json();
 		}
 
-		const { fullName, email, password, gender, specialty, age, dateOfBirth } =
-			reqBody;
+		const {
+			fullName,
+			email,
+			password,
+			gender,
+			specialty,
+			age,
+			dateOfBirth,
+			phoneNumber,
+		} = reqBody;
 
 		console.log("Received data:", {
 			fullName,
@@ -81,6 +89,7 @@ export async function POST(req: NextRequest) {
 			specialty,
 			age,
 			dateOfBirth,
+			phoneNumber,
 		});
 
 		if (
@@ -90,7 +99,8 @@ export async function POST(req: NextRequest) {
 			!specialty ||
 			!age ||
 			!gender ||
-			!dateOfBirth
+			!dateOfBirth ||
+			!phoneNumber
 		) {
 			return NextResponse.json(
 				{ error: "All fields are required" },
@@ -107,11 +117,9 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		// Hash the password
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(password, salt);
 
-		// Create new user with profile image if available
 		const newUser = new User({
 			fullName,
 			email,
@@ -119,7 +127,9 @@ export async function POST(req: NextRequest) {
 			role: "doctor",
 			age: Number(age),
 			gender,
-			profileImage: profileImageUrl || "", // Save the image URL
+			phoneNumber,
+			profileImage: profileImageUrl || "",
+			isVerified: true,
 		});
 		await newUser.save();
 
