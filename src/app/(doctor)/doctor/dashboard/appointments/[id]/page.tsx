@@ -35,6 +35,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast, Toaster } from "react-hot-toast";
 import { format } from "date-fns";
 import Image from "next/image";
+import Link from "next/navigation";
+import { StartConversationButton } from "@/components/StartConversationButton";
 
 interface Appointment {
 	_id: string;
@@ -107,6 +109,8 @@ function AppointmentDetailsPage() {
 			fetchAppointmentDetails();
 		}
 	}, [userData, id, fetchAppointmentDetails]);
+
+	console.log("User Data:", userData?.role);
 
 	const handleStatusChange = async () => {
 		if (!appointment) return;
@@ -476,10 +480,15 @@ function AppointmentDetailsPage() {
 										<FileText className="h-4 w-4 mr-2" />
 										View Records
 									</Button>
-									<Button variant="default" className="w-full" size="sm">
-										<MessageSquare className="h-4 w-4 mr-2" />
-										Message
-									</Button>
+
+									<StartConversationButton
+										userId={appointment.userId._id}
+										userRole={userData?.role || ""}
+										userName={appointment.userId.fullName}
+										variant="default"
+										className="w-full"
+										size="sm"
+									/>
 								</div>
 							</div>
 						</CardContent>

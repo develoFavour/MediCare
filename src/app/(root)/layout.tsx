@@ -4,6 +4,7 @@ import "./globals.css";
 import "icofont/dist/icofont.min.css";
 import ClientLayout from "./clientLayout";
 import { UserProvider } from "@/app/context/UserContext";
+import { MessageProvider } from "../context/MessageContext";
 
 const poppins = Poppins({
 	subsets: ["latin-ext"],
@@ -41,7 +42,9 @@ export default function RootLayout({
 		<html lang="en" className={poppins.variable}>
 			<body className="font-sans antialiased">
 				<UserProvider>
+					{/* <MessageProvider> */}
 					<ClientLayout>{children}</ClientLayout>
+					{/* </MessageProvider> */}
 				</UserProvider>
 			</body>
 		</html>

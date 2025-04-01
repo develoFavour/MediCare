@@ -1,26 +1,18 @@
 "use client";
 
 import type React from "react";
+
 import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Search,
-	Send,
-	Phone,
-	MoreVertical,
-	Loader2,
-	Check,
-	CheckCheck,
-} from "lucide-react";
+import { Search, Send, Phone, MoreVertical, Loader2 } from "lucide-react";
 import { IoVideocam } from "react-icons/io5";
 import { useMessages } from "@/app/context/MessageContext";
 import { useUser } from "@/app/context/UserContext";
 import { format, isToday, isYesterday } from "date-fns";
 import { Toaster } from "react-hot-toast";
-import { NewConversation } from "@/components/NewConversation";
 
 export default function MessagesPage() {
 	const { userData } = useUser();
@@ -30,18 +22,13 @@ export default function MessagesPage() {
 		messages,
 		loadingConversations,
 		loadingMessages,
-		userTyping,
-		onlineUsers,
 		selectConversation,
 		sendMessage,
-		setTyping,
-		markMessageAsRead,
 	} = useMessages();
 
 	const [newMessage, setNewMessage] = useState("");
 	const [searchTerm, setSearchTerm] = useState("");
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const inputRef = useRef<HTMLInputElement>(null);
 
 	// Filter conversations based on search term
 	const filteredConversations = conversations.filter(
@@ -66,11 +53,6 @@ export default function MessagesPage() {
 		}
 	};
 
-	// Check if a user is online
-	const isUserOnline = (userId: string) => {
-		return onlineUsers.some((user) => user._id === userId);
-	};
-
 	// Handle sending a message
 	const handleSendMessage = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -78,33 +60,7 @@ export default function MessagesPage() {
 
 		await sendMessage(newMessage);
 		setNewMessage("");
-
-		// Focus the input after sending
-		if (inputRef.current) {
-			inputRef.current.focus();
-		}
 	};
-
-	// Handle input change and typing indicator
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		setNewMessage(value);
-
-		// Send typing indicator
-		setTyping(value.length > 0);
-	};
-
-	// Mark messages as read when they appear in view
-	useEffect(() => {
-		if (!userData?._id || !messages.length) return;
-
-		// Mark unread messages from other users as read
-		messages.forEach((message) => {
-			if (message.sender._id !== userData._id && !message.read) {
-				markMessageAsRead(message._id);
-			}
-		});
-	}, [messages, userData?._id, markMessageAsRead]);
 
 	// Scroll to bottom when messages change
 	useEffect(() => {
@@ -120,10 +76,7 @@ export default function MessagesPage() {
 			{/* Chat List */}
 			<div className="w-[45%] flex flex-col bg-white rounded-lg shadow-sm">
 				<div className="p-4 border-b">
-					<div className="flex items-center justify-between mb-4">
-						<h1 className="text-xl font-semibold">Messages</h1>
-						<NewConversation />
-					</div>
+					<h1 className="text-xl font-semibold mb-4">Messages</h1>
 					<div className="relative">
 						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
 						<Input
@@ -171,9 +124,7 @@ export default function MessagesPage() {
 												{conv.participants[0]?.fullName.charAt(0)}
 											</AvatarFallback>
 										</Avatar>
-										{isUserOnline(conv.participants[0]?._id) && (
-											<span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
-										)}
+										{/* Online indicator would go here */}
 									</div>
 									<div className="flex-1 min-w-0">
 										<div className="flex justify-between items-start">
@@ -211,31 +162,24 @@ export default function MessagesPage() {
 					<>
 						<div className="flex items-center justify-between p-4 border-b">
 							<div className="flex items-center gap-3">
-								<div className="relative">
-									<Avatar className="h-10 w-10">
-										<AvatarImage
-											src={
-												selectedConversation.participants[0]?.profileImage ||
-												"/placeholder.svg?height=40&width=40"
-											}
-											alt={selectedConversation.participants[0]?.fullName}
-										/>
-										<AvatarFallback>
-											{selectedConversation.participants[0]?.fullName.charAt(0)}
-										</AvatarFallback>
-									</Avatar>
-									{isUserOnline(selectedConversation.participants[0]?._id) && (
-										<span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white"></span>
-									)}
-								</div>
+								<Avatar className="h-10 w-10">
+									<AvatarImage
+										src={
+											selectedConversation.participants[0]?.profileImage ||
+											"/placeholder.svg?height=40&width=40"
+										}
+										alt={selectedConversation.participants[0]?.fullName}
+									/>
+									<AvatarFallback>
+										{selectedConversation.participants[0]?.fullName.charAt(0)}
+									</AvatarFallback>
+								</Avatar>
 								<div>
 									<h2 className="font-medium text-gray-900">
 										{selectedConversation.participants[0]?.fullName}
 									</h2>
 									<p className="text-sm text-gray-500">
-										{isUserOnline(selectedConversation.participants[0]?._id)
-											? "Online"
-											: selectedConversation.participants[0]?.role}
+										{selectedConversation.participants[0]?.role}
 									</p>
 								</div>
 							</div>
@@ -280,49 +224,18 @@ export default function MessagesPage() {
 												}`}
 											>
 												<p className="text-sm">{message.content}</p>
-												<div className="flex items-center justify-end mt-1 gap-1">
-													<span
-														className={`text-xs ${
-															message.sender._id === userData?._id
-																? "text-blue-100"
-																: "text-gray-500"
-														}`}
-													>
-														{format(new Date(message.createdAt), "h:mm a")}
-													</span>
-
-													{/* Show read/delivered status for sent messages */}
-													{message.sender._id === userData?._id && (
-														<span className="ml-1">
-															{message.read ? (
-																<CheckCheck className="h-3 w-3 text-blue-100" />
-															) : message.delivered ? (
-																<Check className="h-3 w-3 text-blue-100" />
-															) : (
-																<Check className="h-3 w-3 text-blue-100 opacity-50" />
-															)}
-														</span>
-													)}
-												</div>
+												<span
+													className={`text-xs mt-1 block ${
+														message.sender._id === userData?._id
+															? "text-blue-100"
+															: "text-gray-500"
+													}`}
+												>
+													{format(new Date(message.createdAt), "h:mm a")}
+												</span>
 											</div>
 										</div>
 									))}
-									{userTyping && userTyping.isTyping && (
-										<div className="flex justify-start">
-											<div className="bg-gray-100 text-gray-900 rounded-lg p-3">
-												<div className="flex items-center">
-													<div className="typing-indicator">
-														<span></span>
-														<span></span>
-														<span></span>
-													</div>
-													<span className="text-xs ml-2 text-gray-500">
-														{userTyping.fullName} is typing...
-													</span>
-												</div>
-											</div>
-										</div>
-									)}
 									<div ref={messagesEndRef} />
 								</div>
 							)}
@@ -331,10 +244,9 @@ export default function MessagesPage() {
 						<form onSubmit={handleSendMessage} className="p-4 border-t">
 							<div className="flex gap-2">
 								<Input
-									ref={inputRef}
 									placeholder="Type your message..."
 									value={newMessage}
-									onChange={handleInputChange}
+									onChange={(e) => setNewMessage(e.target.value)}
 									className="flex-1"
 								/>
 								<Button

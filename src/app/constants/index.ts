@@ -35,6 +35,11 @@ export const clientNavItems = [
 		label: "Cancelled Appointments",
 	},
 	{
+		href: "/patient/dashboard/messages",
+		icon: MessageCircleIcon,
+		label: "Messages",
+	},
+	{
 		href: "/patient/dashboard/prescriptions",
 		icon: FileTextIcon,
 		label: "Your Prescriptions",

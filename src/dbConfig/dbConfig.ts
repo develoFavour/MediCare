@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+mongoose.connection.setMaxListeners(20);
 export const connect = async () => {
 	try {
 		mongoose.connect(process.env.MONGO_URI!);
