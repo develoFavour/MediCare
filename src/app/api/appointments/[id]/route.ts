@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { connect } from "@/dbConfig/dbConfig";
+import { connectToDatabase } from "@/lib/mongoose";
 import Appointment from "@/models/appointmentModel";
 import mongoose from "mongoose";
 import { sendNotificationEmail } from "@/utils/emailService";
@@ -10,7 +10,7 @@ export async function GET(
 	{ params }: { params: { id: string } }
 ) {
 	try {
-		await connect();
+		await connectToDatabase();
 		const id = params.id;
 
 		if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -47,7 +47,7 @@ export async function PATCH(
 	{ params }: { params: { id: string } }
 ) {
 	try {
-		await connect();
+		await connectToDatabase();
 		const id = params.id;
 
 		if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -100,7 +100,7 @@ export async function PATCH(
 		// Send notification email to patient about status change
 		if (status && status !== appointment.status) {
 			try {
-				const statusMessages = {
+				const statusMessages: Record<string, string> = {
 					completed: `Your appointment with Dr. ${
 						appointment.doctorId.fullName
 					} on ${new Date(
@@ -120,17 +120,17 @@ export async function PATCH(
 					).toLocaleString()} has been marked as a no-show as you did not attend.`,
 				};
 
-				const statusSubjects = {
+				const statusSubjects: Record<string, string> = {
 					completed: "Appointment Completed",
 					cancelled: "Appointment Cancelled",
 					"no-show": "Missed Appointment",
 				};
 
-				if (statusMessages[status as keyof typeof statusMessages]) {
+				if (statusMessages[status]) {
 					await sendNotificationEmail({
 						email: appointment.userId.email,
-						subject: statusSubjects[status as keyof typeof statusSubjects],
-						message: statusMessages[status as keyof typeof statusMessages],
+						subject: statusSubjects[status],
+						message: statusMessages[status],
 					});
 					console.log(
 						`Status change notification sent to patient: ${appointment.userId.email}`
@@ -180,7 +180,7 @@ export async function DELETE(
 	{ params }: { params: { id: string } }
 ) {
 	try {
-		await connect();
+		await connectToDatabase();
 		const id = params.id;
 
 		if (!mongoose.Types.ObjectId.isValid(id)) {

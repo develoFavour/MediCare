@@ -1,18 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { connect } from "@/dbConfig/dbConfig";
+import { connectToDatabase, Conversation, User } from "@/lib/mongoose";
 import { getDataFromToken } from "@/helpers/getDataFromToken";
-import Conversation from "@/models/conversationModel";
-import User from "@/models/userModel";
 import mongoose from "mongoose";
-
-// Connect to database
-connect();
 
 // Get all conversations for the current user
 export async function GET(request: NextRequest) {
 	try {
-		const userId = await getDataFromToken(request);
+		await connectToDatabase();
 
+		const userId = await getDataFromToken(request);
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
@@ -45,8 +41,9 @@ export async function GET(request: NextRequest) {
 // Create a new conversation
 export async function POST(request: NextRequest) {
 	try {
-		const userId = await getDataFromToken(request);
+		await connectToDatabase();
 
+		const userId = await getDataFromToken(request);
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
@@ -113,7 +110,6 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(populatedConversation);
 	} catch (error: any) {
 		console.error("Error creating conversation:", error);
-		// Ensure we always return JSON, even for errors
 		return NextResponse.json(
 			{
 				error: error.message || "Failed to create conversation",

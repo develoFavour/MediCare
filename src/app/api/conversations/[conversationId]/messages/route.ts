@@ -1,13 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { connect } from "@/dbConfig/dbConfig";
+import { connectToDatabase, Conversation, Message } from "@/lib/mongoose";
 import { getDataFromToken } from "@/helpers/getDataFromToken";
-import Conversation from "@/models/conversationModel";
-import Message from "@/models/messageModel";
 import { pusherServer } from "@/lib/pusher";
 import { getConversationChannelName, getUserChannelName } from "@/lib/pusher";
-
-// Connect to database
-connect();
 
 // Get all messages for a conversation
 export async function GET(
@@ -15,8 +10,9 @@ export async function GET(
 	{ params }: { params: { conversationId: string } }
 ) {
 	try {
-		const userId = await getDataFromToken(request);
+		await connectToDatabase();
 
+		const userId = await getDataFromToken(request);
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
@@ -104,8 +100,9 @@ export async function POST(
 	{ params }: { params: { conversationId: string } }
 ) {
 	try {
-		const userId = await getDataFromToken(request);
+		await connectToDatabase();
 
+		const userId = await getDataFromToken(request);
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}

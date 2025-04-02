@@ -1,12 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { connect } from "@/dbConfig/dbConfig";
+import { connectToDatabase } from "@/lib/mongoose";
 import AppointmentRequest from "@/models/appointmentRequestModel";
 import mongoose from "mongoose";
 
 export async function POST(request: NextRequest) {
 	console.log("POST request received at /api/appointment-requests");
 	try {
-		await connect(); // Ensure database connection
+		// Use the new connection method
+		await connectToDatabase();
 
 		const reqBody = await request.json();
 		console.log("Received appointment request:", reqBody);

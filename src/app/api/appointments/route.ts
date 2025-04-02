@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { connect } from "@/dbConfig/dbConfig";
+import { connectToDatabase } from "@/lib/mongoose";
 import Appointment from "@/models/appointmentModel";
 import AppointmentRequest from "@/models/appointmentRequestModel";
 import mongoose from "mongoose";
@@ -10,7 +10,8 @@ import {
 
 export async function POST(request: NextRequest) {
 	try {
-		await connect(); // Ensure database connection
+		// Use the new connection method
+		await connectToDatabase();
 
 		const reqBody = await request.json();
 		console.log("Received appointment creation request:", reqBody);
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
 	try {
-		await connect();
+		await connectToDatabase();
 
 		const url = new URL(request.url);
 		const doctorId = url.searchParams.get("doctorId");
