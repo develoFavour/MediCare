@@ -31,15 +31,27 @@ export async function connectToDatabase() {
 		return cached.conn;
 	}
 
+	// Check if MONGO_URI is defined
+	if (!process.env.MONGO_URI) {
+		throw new Error(
+			"Please define the MONGO_URI environment variable inside .env.local or in your Vercel project settings"
+		);
+	}
+
 	if (!cached.promise) {
 		const opts = {
 			bufferCommands: false,
 		};
 
 		cached.promise = mongoose
-			.connect(process.env.MONGODB_URI as string, opts)
+			.connect(process.env.MONGO_URI, opts)
 			.then((mongooseInstance) => {
+				console.log(`MongoDB Connected: ${mongooseInstance.connection.host}`);
 				return mongooseInstance;
+			})
+			.catch((err) => {
+				console.error("MongoDB Connection Error:", err);
+				throw err;
 			});
 	}
 
@@ -61,9 +73,6 @@ import "../models/conversationModel";
 import "../models/messageModel";
 import "../models/prescriptionModel";
 import "../models/doctorModel";
-// Add any other models your application uses
-
-// Add any other models your application uses
 
 // Export models to use throughout the application
 export const User =
