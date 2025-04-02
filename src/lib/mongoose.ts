@@ -31,10 +31,24 @@ export async function connectToDatabase() {
 		return cached.conn;
 	}
 
-	// Check if MONGO_URI is defined
-	if (!process.env.MONGO_URI) {
+	// Check for both possible environment variable names
+	const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
+
+	// Debug logging to help identify the issue
+	console.log("Environment variables check:");
+	console.log("MONGO_URI exists:", !!process.env.MONGO_URI);
+	console.log("MONGODB_URI exists:", !!process.env.MONGODB_URI);
+	console.log("Final URI exists:", !!uri);
+
+	// List all environment variables that contain "MONGO" for debugging
+	const mongoEnvVars = Object.keys(process.env).filter(
+		(key) => key.includes("MONGO") || key.includes("mongo")
+	);
+	console.log("All MongoDB-related env vars:", mongoEnvVars);
+
+	if (!uri) {
 		throw new Error(
-			"Please define the MONGO_URI environment variable inside .env.local or in your Vercel project settings"
+			"MongoDB connection string is undefined. Please define either MONGO_URI or MONGODB_URI environment variable in your Vercel project settings."
 		);
 	}
 
@@ -43,14 +57,21 @@ export async function connectToDatabase() {
 			bufferCommands: false,
 		};
 
+		console.log(
+			"Attempting to connect to MongoDB with URI:",
+			uri.substring(0, 20) + "..." // Only show beginning of URI for security
+		);
+
 		cached.promise = mongoose
-			.connect(process.env.MONGO_URI, opts)
+			.connect(uri, opts)
 			.then((mongooseInstance) => {
 				console.log(`MongoDB Connected: ${mongooseInstance.connection.host}`);
 				return mongooseInstance;
 			})
 			.catch((err) => {
-				console.error("MongoDB Connection Error:", err);
+				console.error("MongoDB Connection Error:", err.message);
+				console.error("Error code:", err.code);
+				console.error("Error stack:", err.stack);
 				throw err;
 			});
 	}
