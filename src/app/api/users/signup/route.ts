@@ -5,8 +5,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { sendVerificationEmail } from "@/utils/emailService";
 
-connect();
-
 // Password validation function
 const isPasswordValid = (password: string) => {
 	const passwordRegex =
@@ -21,6 +19,7 @@ const isPasswordValid = (password: string) => {
 };
 
 export async function POST(req: NextRequest) {
+	await connect();
 	try {
 		const reqBody = await req.json();
 		const { fullName, email, password, phoneNumber, age, gender } = reqBody;
