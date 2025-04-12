@@ -42,7 +42,7 @@ const adminNavItems: NavigationItem[] = [
 		label: "Appointment Request",
 	},
 	{
-		href: "/admin/doctors",
+		href: "/admin/dashboard",
 		icon: User,
 		label: "Doctors",
 		subItems: [
@@ -59,7 +59,7 @@ const adminNavItems: NavigationItem[] = [
 		],
 	},
 	{
-		href: "/admin/patients",
+		href: "/admin/dashboard",
 		icon: Users,
 		label: "Patients",
 		subItems: [

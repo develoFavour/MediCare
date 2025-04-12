@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Clock, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Clock, CheckCircle, AlertCircle } from "lucide-react";
 
 interface AppointmentsOverviewProps {
 	appointmentsToday: number;
@@ -13,6 +13,7 @@ export default function AppointmentsOverview({
 	completedAppointments,
 	pendingAppointments,
 }: AppointmentsOverviewProps) {
+	// Calculate completion percentage
 	const completionPercentage =
 		appointmentsToday > 0
 			? Math.round((completedAppointments / appointmentsToday) * 100)
@@ -20,58 +21,46 @@ export default function AppointmentsOverview({
 
 	return (
 		<Card>
-			<CardHeader className="pb-2">
-				<CardTitle className="text-lg font-semibold text-gray-800">
-					Today&apos;s Appointments
-				</CardTitle>
+			<CardHeader>
+				<CardTitle>Appointments Overview</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<div className="flex items-center p-4 bg-blue-50 rounded-lg">
-						<div className="rounded-full bg-blue-100 p-3 mr-4">
-							<Users className="h-6 w-6 text-blue-600" />
+				<div className="space-y-6">
+					<div className="flex flex-col sm:flex-row justify-between gap-4">
+						<div className="flex items-center gap-2">
+							<Clock className="h-5 w-5 text-blue-500" />
+							<div>
+								<p className="text-sm text-gray-500">
+									Today&apos;s Appointments
+								</p>
+								<p className="text-2xl font-bold">{appointmentsToday}</p>
+							</div>
 						</div>
-						<div>
-							<p className="text-sm text-gray-500">Total Appointments</p>
-							<h3 className="text-2xl font-bold text-gray-800">
-								{appointmentsToday}
-							</h3>
+
+						<div className="flex items-center gap-2">
+							<CheckCircle className="h-5 w-5 text-green-500" />
+							<div>
+								<p className="text-sm text-gray-500">Completed</p>
+								<p className="text-2xl font-bold">{completedAppointments}</p>
+							</div>
+						</div>
+
+						<div className="flex items-center gap-2">
+							<AlertCircle className="h-5 w-5 text-amber-500" />
+							<div>
+								<p className="text-sm text-gray-500">Pending</p>
+								<p className="text-2xl font-bold">{pendingAppointments}</p>
+							</div>
 						</div>
 					</div>
 
-					<div className="flex items-center p-4 bg-green-50 rounded-lg">
-						<div className="rounded-full bg-green-100 p-3 mr-4">
-							<CheckCircle className="h-6 w-6 text-green-600" />
+					<div className="space-y-2">
+						<div className="flex justify-between text-sm">
+							<span>Progress</span>
+							<span>{completionPercentage}%</span>
 						</div>
-						<div>
-							<p className="text-sm text-gray-500">Completed</p>
-							<h3 className="text-2xl font-bold text-gray-800">
-								{completedAppointments}
-							</h3>
-						</div>
+						<Progress value={completionPercentage} className="h-2" />
 					</div>
-
-					<div className="flex items-center p-4 bg-amber-50 rounded-lg">
-						<div className="rounded-full bg-amber-100 p-3 mr-4">
-							<Clock className="h-6 w-6 text-amber-600" />
-						</div>
-						<div>
-							<p className="text-sm text-gray-500">Pending</p>
-							<h3 className="text-2xl font-bold text-gray-800">
-								{pendingAppointments}
-							</h3>
-						</div>
-					</div>
-				</div>
-
-				<div className="mt-6">
-					<div className="flex justify-between mb-2">
-						<span className="text-sm text-gray-500">Completion Rate</span>
-						<span className="text-sm font-medium text-gray-700">
-							{completionPercentage}%
-						</span>
-					</div>
-					<Progress value={completionPercentage} className="h-2" />
 				</div>
 			</CardContent>
 		</Card>

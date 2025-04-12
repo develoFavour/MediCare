@@ -13,6 +13,8 @@ import {
 	Calendar,
 	FileText,
 	Menu,
+	MessageCircleDashedIcon,
+	MessageCircleIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/app/context/UserContext";
@@ -30,6 +32,11 @@ interface NavigationItem {
 // Updated navigation items to include prescriptions
 const doctorNavItems: NavigationItem[] = [
 	{ href: "/doctor/dashboard", icon: Home, label: "Home" },
+	{
+		href: "/doctor/dashboard/messages",
+		icon: MessageCircleIcon,
+		label: "Messages",
+	},
 	{
 		href: "/doctor/dashboard/appointment-request",
 		icon: Calendar,

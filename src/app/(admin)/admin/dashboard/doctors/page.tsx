@@ -489,11 +489,11 @@ function DoctorsPage() {
 																<DropdownMenuItem
 																	onClick={() =>
 																		router.push(
-																			`/admin/dashboard/doctors/edit/${doctor._id}`
+																			`/admin/dashboard/doctors/${doctor._id}`
 																		)
 																	}
 																>
-																	Edit Profile
+																	View Profile
 																</DropdownMenuItem>
 																<DropdownMenuItem
 																	onClick={() =>
