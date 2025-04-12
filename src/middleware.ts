@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
 
 function verifyToken(token: string): { isValid: boolean; payload: any } {
 	try {
-		// Use proper JWT verification with your secret
-		const secret = process.env.TOKEN_SECRET || "";
-
-		// This will throw an error if the token is invalid or expired
-		const payload = jwt.verify(token, secret);
+		const [headerB64, payloadB64] = token.split(".");
+		const payload = JSON.parse(atob(payloadB64));
+		const now = Math.floor(Date.now() / 1000);
 
 		return {
-			isValid: true,
-			payload: typeof payload === "object" ? payload : null,
+			isValid: !(payload.exp && payload.exp < now),
+			payload,
 		};
 	} catch (error) {
 		console.error("Token verification error:", error);
@@ -38,40 +35,64 @@ export async function middleware(req: NextRequest) {
 		path.startsWith("/admin") ||
 		path === "/protected";
 
-	const isLoginPage = path === "/login";
-	const isSignupPage = path === "/signup";
-
 	const token = req.cookies.get("token")?.value || "";
+	const refreshToken = req.cookies.get("refreshToken")?.value || "";
 
-	// Check if token exists and is valid
-	let isValidToken = false;
-	let userRole = null;
-
-	if (token) {
-		const { isValid, payload } = verifyToken(token);
-		isValidToken = isValid;
-		userRole = payload?.role;
-	}
-
-	// Case 1: No token and trying to access protected route - redirect to login
+	// No token and trying to access protected route - redirect to login
 	if (!token && isProtectedPath) {
 		return NextResponse.redirect(new URL("/login", req.url));
 	}
 
-	// Case 2: Has valid token and trying to access login/signup - redirect to dashboard
-	if (isValidToken && (isLoginPage || isSignupPage)) {
-		return NextResponse.redirect(
-			new URL(`/${userRole || "patient"}/dashboard`, req.url)
-		);
-	}
+	// Has token
+	if (token) {
+		const { isValid, payload } = verifyToken(token);
 
-	// Case 3: Has invalid token and trying to access protected route - redirect to login
-	if (!isValidToken && isProtectedPath) {
-		const response = NextResponse.redirect(new URL("/login", req.url));
-		// Clear cookies to ensure clean state
-		response.cookies.delete("token");
-		response.cookies.delete("refreshToken");
-		return response;
+		// If token is valid and user is on public path, redirect to appropriate dashboard
+		if (isValid && isPublicPath) {
+			const role = payload?.role || "patient";
+			return NextResponse.redirect(new URL(`/${role}/dashboard`, req.url));
+		}
+
+		// If token is invalid and on protected path, try refresh or redirect to login
+		if (!isValid && isProtectedPath) {
+			if (refreshToken) {
+				try {
+					const response = await fetch(
+						new URL("/api/auth/refresh", req.url).toString(),
+						{
+							method: "POST",
+							headers: {
+								Cookie: `refreshToken=${refreshToken}`,
+							},
+						}
+					);
+
+					if (response.ok) {
+						const data = await response.json();
+						const newToken = data.token;
+
+						if (newToken) {
+							const res = NextResponse.next();
+							res.cookies.set("token", newToken, {
+								httpOnly: true,
+								secure: process.env.NODE_ENV === "production",
+								sameSite: "strict",
+								maxAge: 60 * 60,
+							});
+							return res;
+						}
+					}
+				} catch (refreshError) {
+					console.error("Error refreshing token:", refreshError);
+				}
+			}
+
+			// If refresh failed or no refresh token, clear cookies and redirect to login
+			const response = NextResponse.redirect(new URL("/login", req.url));
+			response.cookies.delete("token");
+			response.cookies.delete("refreshToken");
+			return response;
+		}
 	}
 
 	// Default: allow the request to proceed

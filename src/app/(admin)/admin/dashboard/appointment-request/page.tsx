@@ -1,21 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { toast, Toaster } from "react-hot-toast";
+import { useState, useEffect, useMemo } from "react";
+import { format } from "date-fns";
+import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	Calendar,
-	User,
 	FileText,
 	CheckCircle,
 	XCircle,
@@ -23,7 +13,40 @@ import {
 	RefreshCw,
 	UserPlus,
 	Loader2,
+	Clock,
+	Filter,
+	Search,
+	ChevronDown,
+	MoreHorizontal,
+	ClipboardList,
 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+	CardContent,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { GlassCard } from "@/components/ui/glass-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface AppointmentRequest {
 	_id: string;
@@ -36,8 +59,10 @@ interface AppointmentRequest {
 	assignedDoctor?: {
 		_id: string;
 		fullName: string;
+		specialty?: string;
 	};
 	createdAt: string;
+	priority?: "low" | "medium" | "high";
 }
 
 interface Doctor {
@@ -46,7 +71,7 @@ interface Doctor {
 	specialty: string;
 }
 
-export default function AdminAppointmentRequests() {
+export default function AppointmentRequestsPage() {
 	const [appointmentRequests, setAppointmentRequests] = useState<
 		AppointmentRequest[]
 	>([]);
@@ -58,9 +83,21 @@ export default function AdminAppointmentRequests() {
 	const [selectedDoctors, setSelectedDoctors] = useState<{
 		[key: string]: string;
 	}>({});
-	const [filter, setFilter] = useState<
+	const [activeTab, setActiveTab] = useState<
 		"all" | "pending" | "approved" | "rejected"
 	>("all");
+	const [searchTerm, setSearchTerm] = useState("");
+
+	// Add some mock priority data for UI demonstration
+	const enhanceRequestsWithPriority = (requests: AppointmentRequest[]) => {
+		return requests.map((request) => ({
+			...request,
+			priority: ["low", "medium", "high"][Math.floor(Math.random() * 3)] as
+				| "low"
+				| "medium"
+				| "high",
+		}));
+	};
 
 	useEffect(() => {
 		fetchAppointmentRequests();
@@ -73,12 +110,14 @@ export default function AdminAppointmentRequests() {
 			const response = await fetch("/api/admin/appointment-requests");
 			if (response.ok) {
 				const data = await response.json();
-				setAppointmentRequests(data);
+				// Add mock priority data
+				setAppointmentRequests(enhanceRequestsWithPriority(data));
 			} else {
 				toast.error("Failed to fetch appointment requests");
 			}
 		} catch (error) {
 			toast.error("An error occurred while fetching appointment requests");
+			console.error(error);
 		} finally {
 			setLoading(false);
 		}
@@ -95,6 +134,7 @@ export default function AdminAppointmentRequests() {
 			}
 		} catch (error) {
 			toast.error("An error occurred while fetching doctors");
+			console.error(error);
 		}
 	};
 
@@ -166,10 +206,40 @@ export default function AdminAppointmentRequests() {
 		}
 	};
 
-	const filteredRequests = appointmentRequests.filter((request) => {
-		if (filter === "all") return true;
-		return request.status === filter;
-	});
+	const filteredRequests = useMemo(() => {
+		return appointmentRequests
+			.filter((request) => {
+				// Filter by tab/status
+				if (activeTab !== "all" && request.status !== activeTab) {
+					return false;
+				}
+
+				// Filter by search term
+				if (
+					searchTerm &&
+					!request.userId?.fullName
+						.toLowerCase()
+						.includes(searchTerm.toLowerCase())
+				) {
+					return false;
+				}
+
+				return true;
+			})
+			.sort((a, b) => {
+				// Sort by priority (high to low) and then by date (newest first)
+				const priorityOrder = { high: 0, medium: 1, low: 2 };
+				const priorityDiff =
+					(priorityOrder[a.priority || "low"] || 0) -
+					(priorityOrder[b.priority || "low"] || 0);
+
+				if (priorityDiff !== 0) return priorityDiff;
+
+				return (
+					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+				);
+			});
+	}, [appointmentRequests, activeTab, searchTerm]);
 
 	const getStatusBadge = (status: string) => {
 		switch (status) {
@@ -177,7 +247,7 @@ export default function AdminAppointmentRequests() {
 				return (
 					<Badge
 						variant="outline"
-						className="bg-yellow-50 text-yellow-700 border-yellow-200 flex items-center gap-1"
+						className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-800 flex items-center gap-1"
 					>
 						<AlertCircle className="h-3 w-3" />
 						Pending
@@ -187,7 +257,7 @@ export default function AdminAppointmentRequests() {
 				return (
 					<Badge
 						variant="outline"
-						className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1"
+						className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800 flex items-center gap-1"
 					>
 						<CheckCircle className="h-3 w-3" />
 						Approved
@@ -197,7 +267,7 @@ export default function AdminAppointmentRequests() {
 				return (
 					<Badge
 						variant="outline"
-						className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1"
+						className="bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800 flex items-center gap-1"
 					>
 						<XCircle className="h-3 w-3" />
 						Rejected
@@ -208,24 +278,66 @@ export default function AdminAppointmentRequests() {
 		}
 	};
 
+	const getPriorityBadge = (priority = "medium") => {
+		switch (priority) {
+			case "high":
+				return (
+					<Badge className="bg-red-100 text-red-800 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800">
+						High Priority
+					</Badge>
+				);
+			case "medium":
+				return (
+					<Badge className="bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800">
+						Medium Priority
+					</Badge>
+				);
+			case "low":
+				return (
+					<Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+						Low Priority
+					</Badge>
+				);
+			default:
+				return null;
+		}
+	};
+
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
-		return new Intl.DateTimeFormat("en-US", {
-			year: "numeric",
-			month: "short",
-			day: "numeric",
-			hour: "2-digit",
-			minute: "2-digit",
-		}).format(date);
+		return format(date, "MMM d, yyyy 'at' h:mm a");
+	};
+
+	const getInitials = (name: string) => {
+		return name
+			.split(" ")
+			.map((part) => part[0])
+			.join("")
+			.toUpperCase()
+			.substring(0, 2);
 	};
 
 	if (loading) {
 		return (
-			<div className="flex flex-col items-center justify-center min-h-[60vh]">
-				<Loader2 className="h-12 w-12 text-[#116aef] animate-spin mb-4" />
-				<h3 className="text-xl font-medium text-gray-700">
-					Loading appointment requests...
-				</h3>
+			<div className="container mx-auto p-6 space-y-8">
+				<div className="flex justify-between items-center mb-8">
+					<div>
+						<Skeleton className="h-10 w-64 mb-2" />
+						<Skeleton className="h-5 w-96" />
+					</div>
+					<div className="flex gap-4">
+						<Skeleton className="h-10 w-32" />
+						<Skeleton className="h-10 w-40" />
+					</div>
+				</div>
+
+				<Skeleton className="h-12 w-full mb-6" />
+
+				<div className="space-y-6">
+					{[1, 2, 3].map((i) => (
+						<Skeleton key={i} className="h-64 w-full rounded-xl" />
+					))}
+				</div>
 			</div>
 		);
 	}
@@ -234,10 +346,10 @@ export default function AdminAppointmentRequests() {
 		<div className="container mx-auto p-6">
 			<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
 				<div>
-					<h1 className="text-3xl font-bold text-gray-800 mb-2">
+					<h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
 						Appointment Requests
 					</h1>
-					<p className="text-gray-500">
+					<p className="text-gray-500 dark:text-gray-400">
 						Manage and assign doctors to patient appointment requests
 					</p>
 				</div>
@@ -250,93 +362,204 @@ export default function AdminAppointmentRequests() {
 						<RefreshCw className="h-4 w-4" />
 						Refresh
 					</Button>
-					<Select
-						value={filter}
-						onValueChange={(value: any) => setFilter(value)}
-					>
-						<SelectTrigger className="w-[180px]">
-							<SelectValue placeholder="Filter by status" />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="all">All Requests</SelectItem>
-							<SelectItem value="pending">Pending</SelectItem>
-							<SelectItem value="approved">Approved</SelectItem>
-							<SelectItem value="rejected">Rejected</SelectItem>
-						</SelectContent>
-					</Select>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" className="flex items-center gap-2">
+								<Filter className="h-4 w-4" />
+								Filter
+								<ChevronDown className="h-4 w-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={() => setActiveTab("all")}>
+								All Requests
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setActiveTab("pending")}>
+								Pending Only
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setActiveTab("approved")}>
+								Approved Only
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={() => setActiveTab("rejected")}>
+								Rejected Only
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 
-			{filteredRequests.length === 0 ? (
-				<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-					<div className="mx-auto w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-						<FileText className="h-8 w-8 text-gray-400" />
+			<GlassCard className="mb-8">
+				<CardContent className="p-4">
+					<div className="flex flex-col md:flex-row gap-4">
+						<div className="relative flex-1">
+							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+							<Input
+								type="text"
+								placeholder="Search by patient name"
+								value={searchTerm}
+								onChange={(e) => setSearchTerm(e.target.value)}
+								className="pl-10"
+							/>
+						</div>
+						<Tabs
+							value={activeTab}
+							onValueChange={(value: any) => setActiveTab(value)}
+							className="w-full md:w-auto"
+						>
+							<TabsList className="grid grid-cols-4 w-full md:w-[400px]">
+								<TabsTrigger value="all" className="text-xs md:text-sm">
+									All
+								</TabsTrigger>
+								<TabsTrigger value="pending" className="text-xs md:text-sm">
+									Pending
+								</TabsTrigger>
+								<TabsTrigger value="approved" className="text-xs md:text-sm">
+									Approved
+								</TabsTrigger>
+								<TabsTrigger value="rejected" className="text-xs md:text-sm">
+									Rejected
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
 					</div>
-					<h3 className="text-lg font-medium text-gray-800 mb-2">
+				</CardContent>
+			</GlassCard>
+
+			{filteredRequests.length === 0 ? (
+				<GlassCard className="p-8 text-center">
+					<div className="mx-auto w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+						<ClipboardList className="h-8 w-8 text-gray-400" />
+					</div>
+					<h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">
 						No appointment requests found
 					</h3>
-					<p className="text-gray-500 mb-4">
+					<p className="text-gray-500 dark:text-gray-400 mb-4">
 						There are no appointment requests matching your filter criteria.
 					</p>
-					<Button onClick={() => setFilter("all")}>View All Requests</Button>
-				</div>
+					<Button
+						onClick={() => {
+							setActiveTab("all");
+							setSearchTerm("");
+						}}
+					>
+						Clear Filters
+					</Button>
+				</GlassCard>
 			) : (
 				<div className="grid grid-cols-1 gap-6">
 					<AnimatePresence>
-						{filteredRequests.map((request) => (
+						{filteredRequests.map((request, index) => (
 							<motion.div
 								key={request._id}
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, y: -20 }}
-								transition={{ duration: 0.3 }}
+								transition={{ duration: 0.3, delay: index * 0.05 }}
 							>
-								<Card className="overflow-hidden border-gray-100 hover:shadow-md transition-shadow duration-300">
-									<CardHeader className="bg-gray-50 pb-4">
-										<div className="flex justify-between items-start">
+								<GlassCard className="overflow-hidden border-gray-100 hover:shadow-md transition-shadow duration-300">
+									<CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 pb-4">
+										<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
 											<div className="flex items-center gap-3">
-												<div className="bg-[#116aef] text-white p-2 rounded-full">
-													<User className="h-5 w-5" />
-												</div>
+												<Avatar className="h-12 w-12 border-2 border-white dark:border-gray-800">
+													<AvatarFallback className="bg-[#116aef] text-white">
+														{getInitials(request.userId?.fullName || "User")}
+													</AvatarFallback>
+												</Avatar>
 												<div>
-													<CardTitle className="text-xl">
+													<CardTitle className="text-xl text-gray-800 dark:text-gray-100">
 														{request.userId?.fullName}
 													</CardTitle>
-													<div className="flex items-center text-sm text-gray-500 mt-1">
-														<Calendar className="h-4 w-4 mr-1" />
-														<span>{formatDate(request.createdAt)}</span>
+													<div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
+														<div className="flex items-center">
+															<Calendar className="h-4 w-4 mr-1" />
+															<span>{formatDate(request.createdAt)}</span>
+														</div>
+														{getPriorityBadge(request.priority)}
 													</div>
 												</div>
 											</div>
-											{getStatusBadge(request.status)}
+											<div className="flex items-center gap-2">
+												{getStatusBadge(request.status)}
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button
+															variant="ghost"
+															size="icon"
+															className="h-8 w-8"
+														>
+															<MoreHorizontal className="h-4 w-4" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem
+															onClick={() => {
+																// View patient details
+																// This would navigate to patient details page
+																toast.success("Viewing patient details");
+															}}
+														>
+															View Patient Details
+														</DropdownMenuItem>
+														{request.status === "pending" && (
+															<>
+																<DropdownMenuItem
+																	onClick={() => {
+																		if (selectedDoctors[request._id]) {
+																			handleApproveRequest(request._id);
+																		} else {
+																			toast.error(
+																				"Please select a doctor first"
+																			);
+																		}
+																	}}
+																>
+																	Approve Request
+																</DropdownMenuItem>
+																<DropdownMenuItem
+																	onClick={() =>
+																		handleRejectRequest(request._id)
+																	}
+																>
+																	Reject Request
+																</DropdownMenuItem>
+															</>
+														)}
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</div>
 										</div>
 									</CardHeader>
 									<CardContent className="pt-6">
 										<div className="mb-6">
-											<h3 className="text-sm font-medium text-gray-500 mb-2 flex items-center">
+											<h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center">
 												<FileText className="h-4 w-4 mr-2" />
 												Symptoms
 											</h3>
-											<p className="text-gray-700 bg-gray-50 p-3 rounded-lg">
+											<p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
 												{request.symptoms}
 											</p>
 										</div>
 
 										{request.assignedDoctor && (
-											<div className="mb-6 bg-blue-50 p-4 rounded-lg">
-												<h3 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
+											<div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+												<h3 className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2 flex items-center">
 													<UserPlus className="h-4 w-4 mr-2" />
 													Assigned Doctor
 												</h3>
-												<p className="text-blue-800 font-medium">
+												<p className="text-blue-800 dark:text-blue-200 font-medium">
 													{request.assignedDoctor?.fullName}
+													{request.assignedDoctor?.specialty && (
+														<span className="text-blue-600 dark:text-blue-300 font-normal ml-2">
+															({request.assignedDoctor.specialty})
+														</span>
+													)}
 												</p>
 											</div>
 										)}
 
 										{request.status === "pending" && (
-											<div className="border-t pt-4 mt-4">
-												<h3 className="text-sm font-medium text-gray-700 mb-3">
+											<div className="border-t border-gray-100 dark:border-gray-800 pt-4 mt-4">
+												<h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
 													Assign Doctor
 												</h3>
 												<div className="flex flex-col sm:flex-row gap-3">
@@ -398,13 +621,18 @@ export default function AdminAppointmentRequests() {
 											</div>
 										)}
 									</CardContent>
-								</Card>
+									<CardFooter className="bg-gray-50 dark:bg-gray-800/50 py-3 px-6 text-xs text-gray-500 dark:text-gray-400">
+										<div className="flex items-center">
+											<Clock className="h-3 w-3 mr-1" />
+											Request ID: {request._id}
+										</div>
+									</CardFooter>
+								</GlassCard>
 							</motion.div>
 						))}
 					</AnimatePresence>
 				</div>
 			)}
-			<Toaster position="top-right" />
 		</div>
 	);
 }

@@ -47,5 +47,3 @@ Overview:
 28. Analytics and Reporting:
 
 29. Implement analytics features for admins to track hospital performance, patient satisfaction, and other key metrics.
-
-Cannot call `users.findOne()` before initial connection is complete if `bufferCommands = false`. Make sure you `await mongoose.connect()` if you have `bufferCommands = false`.

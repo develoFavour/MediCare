@@ -27,6 +27,7 @@ import { AppointmentsList } from "@/components/admin/AppointmentsList";
 import { DoctorsList } from "@/components/admin/DoctorsList";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { StatsCards } from "@/components/admin/StatsCard";
+import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
 
 function AdminDashboard() {
 	const { userData, isLoading } = useUser();
@@ -53,6 +54,9 @@ function AdminDashboard() {
 				<AdminHeader user={userData} />
 				<div className="max-w-7xl mx-auto space-y-6">
 					<StatsCards />
+
+					{/* Add the Analytics Dashboard */}
+					<AnalyticsDashboard />
 
 					<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 						<Card className="lg:col-span-2">
@@ -142,7 +146,7 @@ function AdminDashboard() {
 					<DoctorsList />
 				</div>
 			</main>
-			<footer className="border-t bg-white p-4 text-center text-sm text-gray-500">
+			<footer className="border-t bg-white dark:bg-gray-900 p-4 text-center text-sm text-gray-500">
 				<p>
 					© {new Date().getFullYear()} MediCare Admin Dashboard. All rights
 					reserved.

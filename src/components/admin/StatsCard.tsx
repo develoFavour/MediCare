@@ -1,81 +1,103 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import axios from "axios";
+import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, Clock, Stethoscope, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 export function StatsCards() {
-	const [doctors, setDoctors] = useState([]);
-	const [patients, setPatients] = useState([]);
-	useEffect(() => {
-		const fetchDoctors = async () => {
-			try {
-				const data = await axios
-					.get("/api/doctors/get-doctors-list")
-					.then((res) => res.data);
-				setDoctors(data);
-				console.log("Doctors fetched", data);
-			} catch (error) {
-				console.error("Error fetching doctors:", error);
-			}
-		};
+	const container = {
+		hidden: { opacity: 0 },
+		show: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.1,
+			},
+		},
+	};
 
-		fetchDoctors();
-	}, []);
+	const item = {
+		hidden: { y: 20, opacity: 0 },
+		show: { y: 0, opacity: 1 },
+	};
+
 	return (
-		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			<Card className="border-l-4 border-l-primary">
-				<CardHeader className="flex flex-row items-center justify-between pb-2">
-					<CardTitle className="text-sm font-medium">Total Patients</CardTitle>
-					<Users className="h-4 w-4 text-muted-foreground" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold">1,248</div>
-					<p className="text-xs text-muted-foreground">+8.2% from last month</p>
-				</CardContent>
-			</Card>
+		<motion.div
+			className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+			variants={container}
+			initial="hidden"
+			animate="show"
+		>
+			<motion.div variants={item}>
+				<Card className="glass-card shadow-lg hover:shadow-xl transition-shadow">
+					<CardContent className="pt-6">
+						<div className="flex items-center justify-between">
+							<div>
+								<p className="text-sm font-medium text-muted-foreground">
+									Total Patients
+								</p>
+								<h3 className="text-2xl font-bold mt-1">1,248</h3>
+							</div>
+							<div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+								<Users className="h-6 w-6 text-primary" />
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			</motion.div>
 
-			<Card className="border-l-4 border-l-blue-500">
-				<CardHeader className="flex flex-row items-center justify-between pb-2">
-					<CardTitle className="text-sm font-medium">Total Doctors</CardTitle>
-					<Stethoscope className="h-4 w-4 text-muted-foreground" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold">{doctors.length}</div>
-					<p className="text-xs text-muted-foreground">
-						+2 new doctors this month
-					</p>
-				</CardContent>
-			</Card>
+			<motion.div variants={item}>
+				<Card className="glass-card shadow-lg hover:shadow-xl transition-shadow">
+					<CardContent className="pt-6">
+						<div className="flex items-center justify-between">
+							<div>
+								<p className="text-sm font-medium text-muted-foreground">
+									Total Doctors
+								</p>
+								<h3 className="text-2xl font-bold mt-1">36</h3>
+							</div>
+							<div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+								<Stethoscope className="h-6 w-6 text-blue-500" />
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			</motion.div>
 
-			<Card className="border-l-4 border-l-green-500">
-				<CardHeader className="flex flex-row items-center justify-between pb-2">
-					<CardTitle className="text-sm font-medium">
-						Appointments Today
-					</CardTitle>
-					<Calendar className="h-4 w-4 text-muted-foreground" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold">24</div>
-					<p className="text-xs text-muted-foreground">
-						6 appointments remaining
-					</p>
-				</CardContent>
-			</Card>
+			<motion.div variants={item}>
+				<Card className="glass-card shadow-lg hover:shadow-xl transition-shadow">
+					<CardContent className="pt-6">
+						<div className="flex items-center justify-between">
+							<div className="w-48">
+								<p className="text-sm font-medium text-muted-foreground">
+									Appointments Today
+								</p>
+								<h3 className="text-2xl font-bold mt-1">24</h3>
+							</div>
+							<div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+								<Calendar className="h-6 w-6 text-green-500" />
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			</motion.div>
 
-			<Card className="border-l-4 border-l-amber-500">
-				<CardHeader className="flex flex-row items-center justify-between pb-2">
-					<CardTitle className="text-sm font-medium">
-						Average Wait Time
-					</CardTitle>
-					<Clock className="h-4 w-4 text-muted-foreground" />
-				</CardHeader>
-				<CardContent>
-					<div className="text-2xl font-bold">14 min</div>
-					<p className="text-xs text-muted-foreground">-2 min from last week</p>
-				</CardContent>
-			</Card>
-		</div>
+			<motion.div variants={item}>
+				<Card className="glass-card shadow-lg hover:shadow-xl transition-shadow">
+					<CardContent className="pt-6">
+						<div className="flex items-center justify-between">
+							<div>
+								<p className="text-sm font-medium text-muted-foreground">
+									Average Wait Time
+								</p>
+								<h3 className="text-2xl font-bold mt-1">14 min</h3>
+							</div>
+							<div className="h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+								<Clock className="h-6 w-6 text-amber-500" />
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+			</motion.div>
+		</motion.div>
 	);
 }
