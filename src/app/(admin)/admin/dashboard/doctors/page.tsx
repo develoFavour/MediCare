@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-
+import BreadCrumb from "@/components/BreadCrumb";
 import { withRoleAccess } from "@/components/withRoleAccess";
 import { useUser } from "@/app/context/UserContext";
 import LoadingState from "@/components/LoadingState";
@@ -14,6 +14,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { MessageDoctorButton } from "@/components/doctors/MessageDoctorButton";
 import {
 	Select,
 	SelectContent,
@@ -459,7 +460,7 @@ function DoctorsPage() {
 													</div>
 
 													<div className="mt-6 flex gap-2">
-														<Button
+														{/* <Button
 															variant="outline"
 															className="flex-1"
 															onClick={() =>
@@ -469,7 +470,14 @@ function DoctorsPage() {
 															}
 														>
 															View Profile
-														</Button>
+														</Button> */}
+														<MessageDoctorButton
+															doctorId={doctor._id}
+															size="icon"
+															variant="outline"
+															showIcon={false}
+															className="flex-1"
+														/>
 														<DropdownMenu>
 															<DropdownMenuTrigger asChild>
 																<Button variant="outline" size="icon">
@@ -602,48 +610,55 @@ function DoctorsPage() {
 														</div>
 													</td>
 													<td className="p-3 text-right">
-														<DropdownMenu>
-															<DropdownMenuTrigger asChild>
-																<Button variant="ghost" size="icon">
-																	<MoreHorizontal className="h-4 w-4" />
-																	<span className="sr-only">Open menu</span>
-																</Button>
-															</DropdownMenuTrigger>
-															<DropdownMenuContent align="end">
-																<DropdownMenuLabel>Actions</DropdownMenuLabel>
-																<DropdownMenuItem
-																	onClick={() =>
-																		router.push(
-																			`/admin/dashboard/doctors/${doctor._id}`
-																		)
-																	}
-																>
-																	View Profile
-																</DropdownMenuItem>
-																<DropdownMenuItem
-																	onClick={() =>
-																		router.push(
-																			`/admin/dashboard/doctors/edit/${doctor._id}`
-																		)
-																	}
-																>
-																	Edit Profile
-																</DropdownMenuItem>
-																<DropdownMenuItem
-																	onClick={() =>
-																		router.push(
-																			`/admin/dashboard/doctors/schedule/${doctor._id}`
-																		)
-																	}
-																>
-																	View Schedule
-																</DropdownMenuItem>
-																<DropdownMenuSeparator />
-																<DropdownMenuItem className="text-destructive">
-																	Deactivate Account
-																</DropdownMenuItem>
-															</DropdownMenuContent>
-														</DropdownMenu>
+														<div className="flex items-center justify-end gap-2">
+															<MessageDoctorButton
+																doctorId={doctor._id}
+																size="sm"
+																variant="secondary"
+															/>
+															<DropdownMenu>
+																<DropdownMenuTrigger asChild>
+																	<Button variant="ghost" size="icon">
+																		<MoreHorizontal className="h-4 w-4" />
+																		<span className="sr-only">Open menu</span>
+																	</Button>
+																</DropdownMenuTrigger>
+																<DropdownMenuContent align="end">
+																	<DropdownMenuLabel>Actions</DropdownMenuLabel>
+																	<DropdownMenuItem
+																		onClick={() =>
+																			router.push(
+																				`/admin/dashboard/doctors/${doctor._id}`
+																			)
+																		}
+																	>
+																		View Profile
+																	</DropdownMenuItem>
+																	<DropdownMenuItem
+																		onClick={() =>
+																			router.push(
+																				`/admin/dashboard/doctors/edit/${doctor._id}`
+																			)
+																		}
+																	>
+																		Edit Profile
+																	</DropdownMenuItem>
+																	<DropdownMenuItem
+																		onClick={() =>
+																			router.push(
+																				`/admin/dashboard/doctors/schedule/${doctor._id}`
+																			)
+																		}
+																	>
+																		View Schedule
+																	</DropdownMenuItem>
+																	<DropdownMenuSeparator />
+																	<DropdownMenuItem className="text-destructive">
+																		Deactivate Account
+																	</DropdownMenuItem>
+																</DropdownMenuContent>
+															</DropdownMenu>
+														</div>
 													</td>
 												</tr>
 											))}
@@ -659,4 +674,4 @@ function DoctorsPage() {
 	);
 }
 
-export default DoctorsPage;
+export default withRoleAccess(DoctorsPage, ["admin"]);

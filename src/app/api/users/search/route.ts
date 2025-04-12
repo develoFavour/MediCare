@@ -1,18 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { connect } from "@/dbConfig/dbConfig";
-import { getTokenData } from "@/helpers/getTokenData";
+import { getDataFromToken } from "@/helpers/getDataFromToken";
 import User from "@/models/userModel";
 
 // Connect to database
 connect();
 
+export const runtime = "nodejs";
+
 export async function GET(request: NextRequest) {
 	try {
-		const token = request.cookies.get("token")?.value;
-		if (!token) {
-			return NextResponse.json({ error: "No token found" }, { status: 401 });
-		}
-		const userId = await getTokenData(token);
+		const userId = await getDataFromToken(request);
 
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,10 +56,15 @@ export async function GET(request: NextRequest) {
 			{ email: { $regex: searchQuery, $options: "i" } },
 		];
 
+		console.log("Search criteria:", JSON.stringify(searchCriteria, null, 2));
+
 		// Search for users
 		const users = await User.find(searchCriteria)
 			.select("fullName email role profileImage")
-			.limit(10);
+			.limit(10)
+			.lean();
+
+		console.log(`Found ${users.length} users matching search criteria`);
 
 		return NextResponse.json(users);
 	} catch (error: any) {

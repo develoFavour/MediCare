@@ -17,6 +17,7 @@ import {
 	Settings,
 	ClipboardCheck,
 	Menu,
+	MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/app/context/UserContext";
@@ -34,6 +35,7 @@ interface NavigationItem {
 // Define adminNavItems here if it's not imported
 const adminNavItems: NavigationItem[] = [
 	{ href: "/admin/dashboard", icon: Home, label: "Home" },
+	{ href: "/admin/dashboard/messages", icon: MessageCircle, label: "Messages" },
 	{
 		href: "/admin/dashboard/appointment-request",
 		icon: ClipboardCheck,
@@ -69,17 +71,17 @@ const adminNavItems: NavigationItem[] = [
 		],
 	},
 	{
-		href: "/admin/rooms",
+		href: "/admin/dashboard/",
 		icon: BedDouble,
 		label: "Rooms",
 		subItems: [
 			{
-				href: "/admin/rooms/alloted",
+				href: "/admin/dashboard/",
 				icon: ClipboardList,
 				label: "Rooms Alloted",
 			},
 			{
-				href: "/admin/rooms/available",
+				href: "/admin/dashboard/",
 				icon: DoorOpen,
 				label: "Available Rooms",
 			},

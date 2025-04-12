@@ -108,6 +108,8 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 	const conversationChannelRef = useRef<Channel | null>(null);
 	const presenceChannelRef = useRef<PresenceChannel | null>(null);
 	const userChannelRef = useRef<Channel | null>(null);
+	const sendingMessageRef = useRef<boolean>(false); // Add this ref to prevent duplicate sends
+	const processedMessagesRef = useRef<Set<string>>(new Set()); // Track processed message IDs
 
 	// Subscribe to user's private channel for notifications
 	useEffect(() => {
@@ -122,6 +124,14 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 		userChannel.bind(
 			"new-message",
 			(data: { conversationId: string; message: Message }) => {
+				// Check if we've already processed this message to prevent duplicates
+				if (processedMessagesRef.current.has(data.message._id)) {
+					return;
+				}
+
+				// Add to processed messages
+				processedMessagesRef.current.add(data.message._id);
+
 				// If the message is not for the currently selected conversation, show a notification
 				if (
 					!selectedConversation ||
@@ -264,6 +274,14 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 
 		// Listen for new messages
 		conversationChannel.bind("new-message", (message: Message) => {
+			// Check if we've already processed this message to prevent duplicates
+			if (processedMessagesRef.current.has(message._id)) {
+				return;
+			}
+
+			// Add to processed messages
+			processedMessagesRef.current.add(message._id);
+
 			// Add message to the list
 			setMessages((prev) => [...prev, message]);
 
@@ -415,6 +433,12 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 			}
 
 			const data = await response.json();
+
+			// Update processed messages set with all fetched messages
+			data.forEach((message: Message) => {
+				processedMessagesRef.current.add(message._id);
+			});
+
 			setMessages(data);
 		} catch (error) {
 			console.error("Error fetching messages:", error);
@@ -506,6 +530,14 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 				return;
 			}
 
+			// Prevent duplicate sends
+			if (sendingMessageRef.current) {
+				console.log("Already sending a message, ignoring duplicate request");
+				return;
+			}
+
+			sendingMessageRef.current = true;
+
 			try {
 				const response = await fetch(
 					`/api/conversations/${selectedConversation._id}/messages`,
@@ -524,8 +556,17 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 
 				const newMessage = await response.json();
 
-				// Update messages locally
-				setMessages((prev) => [...prev, newMessage]);
+				// Add to processed messages to prevent duplicates from Pusher
+				processedMessagesRef.current.add(newMessage._id);
+
+				// Update messages locally - only if not already added by Pusher
+				setMessages((prev) => {
+					// Check if message already exists in the list
+					if (prev.some((msg) => msg._id === newMessage._id)) {
+						return prev;
+					}
+					return [...prev, newMessage];
+				});
 
 				// Update conversations list with new last message
 				setConversations((prev) => {
@@ -544,6 +585,8 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 								read: newMessage.read,
 							},
 							updatedAt: new Date().toISOString(),
+							// Don't increment unread count for own messages
+							unreadCount: 0,
 						};
 
 						// Sort conversations by updatedAt
@@ -559,6 +602,9 @@ export const MessageProvider: React.FC<{ children: React.ReactNode }> = ({
 			} catch (error) {
 				console.error("Error sending message:", error);
 				toast.error("Failed to send message");
+			} finally {
+				// Reset sending flag
+				sendingMessageRef.current = false;
 			}
 		},
 		[selectedConversation, userData?._id]

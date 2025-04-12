@@ -1,7 +1,11 @@
+export const runtime = "nodejs";
+
 import { type NextRequest, NextResponse } from "next/server";
-import { connectToDatabase, Conversation, User } from "@/lib/mongoose";
+import { connectToDatabase } from "@/lib/mongoose";
 import { getDataFromToken } from "@/helpers/getDataFromToken";
 import mongoose from "mongoose";
+import User from "@/models/userModel";
+import Conversation from "@/models/conversationModel";
 
 // Get all conversations for the current user
 export async function GET(request: NextRequest) {
@@ -79,8 +83,11 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Check if a conversation already exists between these users
-		// We need to check both possible orderings of participants
+		console.log(
+			`Checking for existing conversation between ${userId} and ${participantId}`
+		);
+
+		// Fix: Use a better query to find existing conversations
 		const existingConversation = await Conversation.findOne({
 			participants: { $all: [userObjectId, participantObjectId] },
 		}).populate({
@@ -90,24 +97,59 @@ export async function POST(request: NextRequest) {
 		});
 
 		if (existingConversation) {
+			console.log(`Found existing conversation: ${existingConversation._id}`);
 			return NextResponse.json(existingConversation);
 		}
 
-		// Create a new conversation
-		const newConversation = await Conversation.create({
-			participants: [userObjectId, participantObjectId],
-		});
+		console.log(
+			`No existing conversation found, creating new one between ${userId} and ${participantId}`
+		);
 
-		// Populate the participants
-		const populatedConversation = await Conversation.findById(
-			newConversation._id
-		).populate({
-			path: "participants",
-			select: "fullName email role profileImage",
-			match: { _id: { $ne: userId } },
-		});
+		// If we get here, no existing conversation was found, so create a new one
+		try {
+			// Create a new conversation with both participants
+			const newConversation = new Conversation({
+				participants: [userObjectId, participantObjectId],
+			});
 
-		return NextResponse.json(populatedConversation);
+			// Save the conversation
+			await newConversation.save();
+
+			// Populate the participants
+			const populatedConversation = await Conversation.findById(
+				newConversation._id
+			).populate({
+				path: "participants",
+				select: "fullName email role profileImage",
+				match: { _id: { $ne: userId } },
+			});
+
+			console.log(`Created new conversation: ${newConversation._id}`);
+			return NextResponse.json(populatedConversation);
+		} catch (error: any) {
+			// If we get any error, try one more time to find the conversation
+			// This handles race conditions where the conversation might have been created
+			// by another request between our check and creation
+			console.log(
+				"Error creating conversation, checking if it exists now:",
+				error.message
+			);
+
+			const retryConversation = await Conversation.findOne({
+				participants: { $all: [userObjectId, participantObjectId] },
+			}).populate({
+				path: "participants",
+				select: "fullName email role profileImage",
+				match: { _id: { $ne: userId } },
+			});
+
+			if (retryConversation) {
+				console.log(`Found conversation on retry: ${retryConversation._id}`);
+				return NextResponse.json(retryConversation);
+			}
+
+			throw error;
+		}
 	} catch (error: any) {
 		console.error("Error creating conversation:", error);
 		return NextResponse.json(
