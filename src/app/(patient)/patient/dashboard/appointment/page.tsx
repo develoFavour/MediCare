@@ -76,6 +76,7 @@ export default function BookAppointmentPage() {
 			<h1 className="text-3xl font-bold mb-8 text-[#116aef]">
 				Request an Appointment
 			</h1>
+
 			<div className="space-y-6">
 				<div>
 					<label

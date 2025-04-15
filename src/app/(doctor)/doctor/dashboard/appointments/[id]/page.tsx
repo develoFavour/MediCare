@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import { withRoleAccess } from "@/components/withRoleAccess";
@@ -29,14 +29,11 @@ import {
 	CheckCircle,
 	XCircle,
 	AlertTriangle,
-	Pill,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import { toast, Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { format } from "date-fns";
 import Image from "next/image";
-import Link from "next/navigation";
-import { StartConversationButton } from "@/components/StartConversationButton";
 
 interface Appointment {
 	_id: string;
@@ -66,7 +63,6 @@ function AppointmentDetailsPage() {
 	const [appointment, setAppointment] = useState<Appointment | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [hasPrescription, setHasPrescription] = useState(false);
 
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [dialogAction, setDialogAction] = useState<
@@ -75,7 +71,13 @@ function AppointmentDetailsPage() {
 	const [notes, setNotes] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 
-	const fetchAppointmentDetails = useCallback(async () => {
+	useEffect(() => {
+		if (userData?._id && id) {
+			fetchAppointmentDetails();
+		}
+	}, [userData, id]);
+
+	const fetchAppointmentDetails = async () => {
 		try {
 			setLoading(true);
 			setError(null);
@@ -87,30 +89,13 @@ function AppointmentDetailsPage() {
 
 			const data = await response.json();
 			setAppointment(data.appointment);
-
-			// Check if prescription exists for this appointment
-			const prescriptionResponse = await fetch(
-				`/api/prescriptions?appointmentId=${id}`
-			);
-			if (prescriptionResponse.ok) {
-				const prescriptionData = await prescriptionResponse.json();
-				setHasPrescription(!!prescriptionData.prescription);
-			}
 		} catch (err: any) {
 			console.error("Error fetching appointment details:", err);
 			setError(err.message || "Failed to load appointment details");
 		} finally {
 			setLoading(false);
 		}
-	}, [id]);
-
-	useEffect(() => {
-		if (userData?._id && id) {
-			fetchAppointmentDetails();
-		}
-	}, [userData, id, fetchAppointmentDetails]);
-
-	console.log("User Data:", userData?.role);
+	};
 
 	const handleStatusChange = async () => {
 		if (!appointment) return;
@@ -235,7 +220,7 @@ function AppointmentDetailsPage() {
 
 	if (loading) {
 		return (
-			<div className="container mx-auto py-6 bg-gray-50 min-h-screen">
+			<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
 				<div className="flex justify-center items-center h-64">
 					<div className="text-center">
 						<Loader2 className="h-10 w-10 mx-auto animate-spin text-blue-600 mb-4" />
@@ -248,7 +233,7 @@ function AppointmentDetailsPage() {
 
 	if (error || !appointment) {
 		return (
-			<div className="container mx-auto py-6 bg-gray-50 min-h-screen">
+			<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
 				<Card>
 					<CardContent className="py-10">
 						<div className="flex flex-col items-center justify-center text-center">
@@ -277,7 +262,7 @@ function AppointmentDetailsPage() {
 	const isPastDate = new Date() > appointmentDate;
 
 	return (
-		<div className="container mx-auto py-6 bg-gray-50 min-h-screen">
+		<div className="pl-[310px] pr-6 py-6 bg-gray-50 min-h-screen">
 			<div className="mb-6 flex items-center">
 				<Button variant="ghost" onClick={() => router.back()} className="mr-4">
 					<ChevronLeft className="h-4 w-4 mr-2" />
@@ -318,8 +303,8 @@ function AppointmentDetailsPage() {
 											{appointment.type === "in-person"
 												? "Visit our clinic at the scheduled time"
 												: appointment.type === "virtual"
-												? "You'll receive a link to join the video call"
-												: "We'll call you at the scheduled time"}
+													? "You'll receive a link to join the video call"
+													: "We'll call you at the scheduled time"}
 										</p>
 									</div>
 								</div>
@@ -390,6 +375,20 @@ function AppointmentDetailsPage() {
 							</CardHeader>
 							<CardContent className="pt-6">
 								<div className="flex flex-wrap gap-3">
+									{appointment.type === "virtual" &&
+										appointment.status === "scheduled" && (
+											<Button
+												className="bg-indigo-600 hover:bg-indigo-700"
+												onClick={() =>
+													router.push(
+														`/doctor/dashboard/appointments/${appointment._id}/video-consultation`
+													)
+												}
+											>
+												<Video className="mr-2 h-4 w-4" />
+												Start Video Call
+											</Button>
+										)}
 									<Button
 										onClick={() => openStatusDialog("complete")}
 										className="bg-green-600 hover:bg-green-700"
@@ -441,27 +440,20 @@ function AppointmentDetailsPage() {
 						<CardContent className="pt-6">
 							<div className="flex items-center mb-4">
 								<div className="relative h-16 w-16 rounded-full overflow-hidden mr-4">
-									{appointment.userId?.profileImage ? (
-										<Image
-											src={
-												appointment.userId.profileImage || "/placeholder.svg"
-											}
-											alt={appointment.userId.fullName}
-											width={64}
-											height={64}
-											className="object-cover"
-										/>
-									) : (
-										<div className="bg-gray-200 h-full w-full flex items-center justify-center">
-											<span className="text-gray-500 text-xl font-semibold">
-												{appointment.userId.fullName.charAt(0)}
-											</span>
-										</div>
-									)}
+									<Image
+										src={
+											appointment.userId.profileImage ||
+											"/placeholder.svg?height=64&width=64"
+										}
+										alt={appointment.userId.fullName}
+										width={64}
+										height={64}
+										className="object-cover"
+									/>
 								</div>
 								<div>
 									<h3 className="font-medium text-gray-800 text-lg">
-										{appointment.userId?.fullName}
+										{appointment.userId.fullName}
 									</h3>
 									<p className="text-gray-500 text-sm">Patient</p>
 								</div>
@@ -471,7 +463,7 @@ function AppointmentDetailsPage() {
 								<div className="flex items-center">
 									<Mail className="h-4 w-4 text-gray-500 mr-3" />
 									<span className="text-gray-600">
-										{appointment.userId?.email}
+										{appointment.userId.email}
 									</span>
 								</div>
 
@@ -480,15 +472,10 @@ function AppointmentDetailsPage() {
 										<FileText className="h-4 w-4 mr-2" />
 										View Records
 									</Button>
-
-									<StartConversationButton
-										userId={appointment.userId._id}
-										userRole={userData?.role || ""}
-										userName={appointment.userId.fullName}
-										variant="default"
-										className="w-full"
-										size="sm"
-									/>
+									<Button variant="default" className="w-full" size="sm">
+										<MessageSquare className="h-4 w-4 mr-2" />
+										Message
+									</Button>
 								</div>
 							</div>
 						</CardContent>
@@ -506,19 +493,9 @@ function AppointmentDetailsPage() {
 									<Calendar className="h-4 w-4 mr-2" />
 									Schedule Follow-up
 								</Button>
-								<Button
-									variant="outline"
-									className="w-full justify-start"
-									onClick={() =>
-										router.push(
-											`/doctor/dashboard/prescriptions/${appointment._id}`
-										)
-									}
-								>
-									<Pill className="h-4 w-4 mr-2" />
-									{hasPrescription
-										? "Edit Prescription"
-										: "Create Prescription"}
+								<Button variant="outline" className="w-full justify-start">
+									<FileText className="h-4 w-4 mr-2" />
+									Create Prescription
 								</Button>
 							</div>
 						</CardContent>
@@ -534,8 +511,8 @@ function AppointmentDetailsPage() {
 							{dialogAction === "complete"
 								? "Mark Appointment as Completed"
 								: dialogAction === "cancel"
-								? "Cancel Appointment"
-								: "Mark Appointment as No-Show"}
+									? "Cancel Appointment"
+									: "Mark Appointment as No-Show"}
 						</DialogTitle>
 					</DialogHeader>
 
@@ -544,8 +521,8 @@ function AppointmentDetailsPage() {
 							{dialogAction === "complete"
 								? "Confirm that this appointment has been completed."
 								: dialogAction === "cancel"
-								? "Are you sure you want to cancel this appointment?"
-								: "Confirm that the patient did not attend this appointment."}
+									? "Are you sure you want to cancel this appointment?"
+									: "Confirm that the patient did not attend this appointment."}
 						</p>
 
 						<div className="space-y-2">
@@ -553,8 +530,8 @@ function AppointmentDetailsPage() {
 								{dialogAction === "complete"
 									? "Add any notes about the appointment (optional)"
 									: dialogAction === "cancel"
-									? "Reason for cancellation (optional)"
-									: "Notes about no-show (optional)"}
+										? "Reason for cancellation (optional)"
+										: "Notes about no-show (optional)"}
 							</label>
 							<Textarea
 								value={notes}
@@ -563,8 +540,8 @@ function AppointmentDetailsPage() {
 									dialogAction === "complete"
 										? "Treatment notes, follow-up plans, etc."
 										: dialogAction === "cancel"
-										? "Reason for cancelling this appointment"
-										: "Any notes about patient no-show"
+											? "Reason for cancelling this appointment"
+											: "Any notes about patient no-show"
 								}
 								className="min-h-[100px]"
 							/>
@@ -582,8 +559,8 @@ function AppointmentDetailsPage() {
 								dialogAction === "complete"
 									? "bg-green-600 hover:bg-green-700"
 									: dialogAction === "cancel"
-									? "bg-red-600 hover:bg-red-700"
-									: "bg-gray-600 hover:bg-gray-700"
+										? "bg-red-600 hover:bg-red-700"
+										: "bg-gray-600 hover:bg-gray-700"
 							}
 						>
 							{submitting ? (
@@ -596,15 +573,14 @@ function AppointmentDetailsPage() {
 									{dialogAction === "complete"
 										? "Confirm Completion"
 										: dialogAction === "cancel"
-										? "Confirm Cancellation"
-										: "Confirm No-Show"}
+											? "Confirm Cancellation"
+											: "Confirm No-Show"}
 								</>
 							)}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-			<Toaster position="top-center" />
 		</div>
 	);
 }

@@ -16,6 +16,7 @@ import {
 	DoorOpen,
 	Stethoscope,
 	SettingsIcon,
+	Bot,
 } from "lucide-react";
 export const clientNavItems = [
 	{ href: "/patient/dashboard", icon: HomeIcon, label: "Home" },
@@ -24,15 +25,15 @@ export const clientNavItems = [
 		icon: SquarePlus,
 		label: "New Appointment",
 	},
+	// {
+	// 	href: "/patient/dashboard/ai-symptom-analyzer",
+	// 	icon: Bot,
+	// 	label: "Ai Symptom Analyzer",
+	// },
 	{
 		href: "/patient/dashboard/upcoming-appointments",
 		icon: CalendarIcon,
 		label: "Upcoming Appointments",
-	},
-	{
-		href: "/patient/dashboard/cancelled-appointments",
-		icon: XCircleIcon,
-		label: "Cancelled Appointments",
 	},
 	{
 		href: "/patient/dashboard/messages",

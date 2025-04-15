@@ -11,6 +11,8 @@
 		"remove-email-index": "node src/removeEmailIndex.js"
 	},
 	"dependencies": {
+		"@ai-sdk/openai": "^1.3.10",
+		"@ai-sdk/react": "^1.2.8",
 		"@getbrevo/brevo": "^2.2.0",
 		"@hookform/resolvers": "^4.0.0",
 		"@radix-ui/react-avatar": "^1.1.0",
@@ -34,6 +36,7 @@
 		"@types/react-datepicker": "^6.2.0",
 		"@types/three": "^0.170.0",
 		"@vercel/blob": "^0.27.3",
+		"ai": "^4.3.5",
 		"axios": "^1.7.7",
 		"bcryptjs": "^2.4.3",
 		"chart.js": "^4.4.6",
@@ -47,11 +50,12 @@
 		"jsonwebtoken": "^9.0.2",
 		"libphonenumber-js": "^1.11.12",
 		"lucide-react": "^0.436.0",
-		"mongoose": "^8.7.0",
+		"mongoose": "^8.13.2",
 		"next": "14.2.6",
 		"next-auth": "^4.24.11",
 		"next-themes": "^0.4.6",
 		"nodemailer": "^6.9.16",
+		"openai": "^4.93.0",
 		"pusher": "^5.2.0",
 		"pusher-js": "^8.4.0",
 		"react": "^18",
@@ -80,6 +84,7 @@
 	"devDependencies": {
 		"@types/bcryptjs": "^2.4.6",
 		"@types/jsonwebtoken": "^9.0.7",
+		"@types/mongoose": "^5.11.96",
 		"@types/node": "^20",
 		"@types/nodemailer": "^6.4.16",
 		"@types/react": "^19.1.1",

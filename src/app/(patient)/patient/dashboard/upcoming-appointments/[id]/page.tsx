@@ -29,6 +29,7 @@ import {
 import { format, isPast, isToday, addDays } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast, Toaster } from "react-hot-toast";
+import AppointmentDetailActions from "@/components/patientDashboard/AppointmentDetailActions";
 
 interface Appointment {
 	_id: string;
@@ -394,6 +395,13 @@ export default function AppointmentDetailsPage() {
 				<Separator />
 
 				<CardFooter className="flex justify-between pt-6">
+					<AppointmentDetailActions
+						appointmentId={appointment._id}
+						appointmentDate={appointmentDate}
+						appointmentType={appointment.type}
+						appointmentStatus={appointment.status}
+						onCancel={cancelAppointment}
+					/>
 					<Button
 						variant="outline"
 						onClick={() =>

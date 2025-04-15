@@ -16,6 +16,7 @@ import { QuickBooking } from "@/components/dashboard/QuickBooking";
 
 import { AppointmentHistory } from "@/components/dashboard/AppointmentHistory";
 import { MedicalDocuments } from "@/components/dashboard/MedicalDocuments";
+import { AISymptomAnalyzer } from "@/components/patientDashboard/AiSymptomsAnalyzer";
 
 function PatientDashboardPage() {
 	const router = useRouter();
@@ -68,6 +69,8 @@ function PatientDashboardPage() {
 					<div className="grid gap-6">
 						<UpcomingAppointments limit={3} />
 					</div>
+
+					<AISymptomAnalyzer />
 
 					{/* Doctor Availability & Hospital Announcements */}
 				</TabsContent>

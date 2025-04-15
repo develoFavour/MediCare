@@ -1,4 +1,4 @@
-import axios from "axios";
+import nodemailer from "nodemailer";
 
 interface EmailParams {
 	email: string;
@@ -27,17 +27,28 @@ interface AppointmentConfirmationParams {
 	notes?: string;
 }
 
-// Update the brevoClient creation to include better error handling for missing API key
+// Create a transporter using Gmail SMTP
+const createTransporter = () => {
+	// Check if required environment variables are set
+	if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+		console.error(
+			"Gmail credentials are not properly configured in environment variables"
+		);
+		throw new Error(
+			"Email service configuration error: Gmail credentials missing"
+		);
+	}
 
-// Brevo API client
-const brevoClient = axios.create({
-	baseURL: "https://api.brevo.com/v3",
-	headers: {
-		"api-key": process.env.BREVO_API_KEY,
-		"Content-Type": "application/json",
-		Accept: "application/json",
-	},
-});
+	return nodemailer.createTransport({
+		host: "smtp.gmail.com",
+		port: 587,
+		secure: false, // true for 465, false for other ports
+		auth: {
+			user: process.env.GMAIL_USER, // your Gmail address
+			pass: process.env.GMAIL_APP_PASSWORD, // your Gmail app password
+		},
+	});
+};
 
 export const sendEmail = async ({
 	email,
@@ -45,13 +56,7 @@ export const sendEmail = async ({
 	htmlContent,
 }: EmailParams) => {
 	try {
-		console.log(`Attempting to send email to: ${email} via Brevo API`);
-
-		// Check if API key is available
-		if (!process.env.BREVO_API_KEY) {
-			console.error("BREVO_API_KEY environment variable is not set");
-			throw new Error("Email service configuration error: API key is missing");
-		}
+		console.log(`Attempting to send email to: ${email} via Gmail SMTP`);
 
 		// Make sure we have all required fields
 		if (!email || !subject || !htmlContent) {
@@ -60,41 +65,20 @@ export const sendEmail = async ({
 			);
 		}
 
-		// Use the verified sender from your Brevo account
-		const payload = {
-			sender: {
-				name: "medicare",
-				email: "opiafavour@yahoo.com", // Use your verified sender email exactly as shown in Brevo
-			},
-			to: [
-				{
-					email: email,
-				},
-			],
-			subject: subject,
-			htmlContent: htmlContent,
-		};
+		const transporter = createTransporter();
 
-		console.log(
-			"Sending email with payload:",
-			JSON.stringify(payload, null, 2)
-		);
-
-		// Explicitly set the API key in the request headers to ensure it's included
-		const response = await brevoClient.post("/smtp/email", payload, {
-			headers: {
-				"api-key": process.env.BREVO_API_KEY,
-			},
+		// Send mail with defined transport object
+		const info = await transporter.sendMail({
+			from: `"MediCare" <${process.env.GMAIL_USER}>`, // sender address
+			to: email, // list of receivers
+			subject: subject, // Subject line
+			html: htmlContent, // html body
 		});
 
-		console.log("Email sent successfully via Brevo API:", response.data);
-
-		return { success: true, messageId: response.data.messageId };
+		console.log("Email sent successfully via Gmail SMTP:", info.messageId);
+		return { success: true, messageId: info.messageId };
 	} catch (error: any) {
 		console.error("Error in sendEmail function:", error);
-		if (error.response) {
-			console.error("API error response:", error.response.data);
-		}
 		throw new Error(`Failed to send email: ${error.message}`);
 	}
 };
@@ -473,9 +457,7 @@ export const sendAppointmentConfirmationEmail = async ({
         </ul>
         
         <p style="text-align: center;">
-          <a href="${
-						process.env.NEXT_PUBLIC_APP_URL
-					}/dashboard" class="button">View in Dashboard</a>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="button">View in Dashboard</a>
         </p>
         
         <p>If you have any questions or need assistance, please contact our support team.</p>
